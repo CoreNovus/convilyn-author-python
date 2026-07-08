@@ -153,9 +153,7 @@ class WorkflowTestRunner:
                     # Build minimal test args
                     tool_reg = server.get_tool(tool_name)
                     if tool_reg is None:
-                        result.errors.append(
-                            f"Tool {tool_name} not found on server {server_name}"
-                        )
+                        result.errors.append(f"Tool {tool_name} not found on server {server_name}")
                         continue
 
                     test_args = _build_test_args(tool_reg.input_schema)
@@ -165,9 +163,7 @@ class WorkflowTestRunner:
                     if isinstance(tool_result, dict):
                         result.outputs.append(tool_result)
                 except Exception as exc:
-                    result.errors.append(
-                        f"Tool {tool_ref} failed: {exc}"
-                    )
+                    result.errors.append(f"Tool {tool_ref} failed: {exc}")
                     result.passed = False
 
             result.phases_completed.append(phase_name)

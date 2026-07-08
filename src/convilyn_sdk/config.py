@@ -60,7 +60,5 @@ class SDKConfig:
                 "CONVILYN_PLATFORM_URL", "https://api.convilyn.corenovus.com"
             ),
             hmac_secret=os.environ.get("CONVILYN_HMAC_SECRET") or None,
-            hmac_tolerance_seconds=int(
-                os.environ.get("CONVILYN_HMAC_TOLERANCE_SECONDS", "300")
-            ),
+            hmac_tolerance_seconds=int(os.environ.get("CONVILYN_HMAC_TOLERANCE_SECONDS", "300")),
         )

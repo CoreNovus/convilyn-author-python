@@ -96,9 +96,7 @@ class TestQaPolicyParity:
 
         annotation = backend_field.annotation
         if get_origin(annotation) is Union:
-            literal_arg = next(
-                arg for arg in _get_args(annotation) if arg is not type(None)
-            )
+            literal_arg = next(arg for arg in _get_args(annotation) if arg is not type(None))
         else:
             literal_arg = annotation
         assert get_args(FirstQuestionFormat) == get_args(literal_arg)

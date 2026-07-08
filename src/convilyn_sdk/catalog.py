@@ -71,21 +71,25 @@ class ToolCatalog:
         data = json.loads(path.read_text(encoding="utf-8"))
         for srv in data.get("servers", []):
             tools = srv.get("tools", [])
-            self._servers.append(ServerInfo(
-                name=srv["name"],
-                description=srv.get("description", ""),
-                tool_count=len(tools),
-                capabilities=srv.get("capabilities", []),
-            ))
+            self._servers.append(
+                ServerInfo(
+                    name=srv["name"],
+                    description=srv.get("description", ""),
+                    tool_count=len(tools),
+                    capabilities=srv.get("capabilities", []),
+                )
+            )
             for tool in tools:
-                self._tools.append(ToolInfo(
-                    name=tool["name"],
-                    server=srv["name"],
-                    description=tool.get("description", ""),
-                    input_schema=tool.get("input_schema", {}),
-                    output_schema=tool.get("output_schema"),
-                    capabilities=tool.get("capabilities", []),
-                ))
+                self._tools.append(
+                    ToolInfo(
+                        name=tool["name"],
+                        server=srv["name"],
+                        description=tool.get("description", ""),
+                        input_schema=tool.get("input_schema", {}),
+                        output_schema=tool.get("output_schema"),
+                        capabilities=tool.get("capabilities", []),
+                    )
+                )
 
     def list_servers(self) -> list[ServerInfo]:
         """List all MCP servers."""

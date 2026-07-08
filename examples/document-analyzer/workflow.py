@@ -14,8 +14,7 @@ workflow = (
         name="Document Analyzer",
         version="1.0.0",
         description=(
-            "Analyze uploaded documents — extract text, identify keywords, "
-            "and generate summary"
+            "Analyze uploaded documents — extract text, identify keywords, and generate summary"
         ),
     )
     .with_input(

@@ -22,9 +22,7 @@ def assert_tool_error(result: ToolResult, expected_code: str | None = None) -> N
     if result.success:
         raise AssertionError(f"Expected tool failure but got success: {result.data}")
     if expected_code and result.error and result.error.code != expected_code:
-        raise AssertionError(
-            f"Expected error code '{expected_code}' but got '{result.error.code}'"
-        )
+        raise AssertionError(f"Expected error code '{expected_code}' but got '{result.error.code}'")
 
 
 def assert_schema_valid(data: dict[str, Any], required_keys: list[str]) -> None:

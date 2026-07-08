@@ -209,6 +209,7 @@ def workflow_build(workflow_file: str, server_file: str, output: str) -> None:
 
     # Save
     import json
+
     Path(output).write_text(
         json.dumps(compiled, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
@@ -380,9 +381,7 @@ def logs(runtime_id: str, since: str | None, limit: int) -> None:
     client = ConvilynClient()
 
     async def _logs() -> list[dict[str, Any]]:
-        return await client.get_hosted_runtime_logs(
-            runtime_id, since=since, limit=limit
-        )
+        return await client.get_hosted_runtime_logs(runtime_id, since=since, limit=limit)
 
     try:
         entries = asyncio.run(_logs())
@@ -470,12 +469,7 @@ def template_fork(name: str, new_name: str) -> None:
         raise SystemExit(1)
 
     click.echo(f"Forked to {destination}")
-    click.echo(
-        f"Next:\n"
-        f"  cd {destination.name}\n"
-        "  pip install -e .\n"
-        "  convilyn-author dev"
-    )
+    click.echo(f"Next:\n  cd {destination.name}\n  pip install -e .\n  convilyn-author dev")
 
 
 @cli.command("status")

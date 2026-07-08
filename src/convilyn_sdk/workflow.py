@@ -359,9 +359,7 @@ class WorkflowSpec:
         """
         clone = self._clone()
         roles, derived_specialists = _normalise_specialists(active_specialists)
-        merged_specialists = _merge_specialist_configs(
-            derived_specialists, specialists
-        )
+        merged_specialists = _merge_specialist_configs(derived_specialists, specialists)
         clone._multi_agent = MultiRoleConfig(
             active_specialists=roles,
             specialists=merged_specialists or None,
@@ -530,18 +528,12 @@ class WorkflowSpec:
             slot_policy=_coerce_to_model(slot_policy, SlotPolicyConfig),
             goal_criteria=_coerce_to_model(goal_criteria, GoalCriteriaConfig),
             tool_pipeline=(
-                [
-                    _coerce_to_model(stage, ToolStageConfig)
-                    for stage in tool_pipeline
-                ]
+                [_coerce_to_model(stage, ToolStageConfig) for stage in tool_pipeline]
                 if tool_pipeline is not None
                 else None
             ),
             failure_rubric=(
-                [
-                    _coerce_to_model(rule, FailureRuleConfig)
-                    for rule in failure_rubric
-                ]
+                [_coerce_to_model(rule, FailureRuleConfig) for rule in failure_rubric]
                 if failure_rubric is not None
                 else None
             ),
@@ -585,10 +577,7 @@ class WorkflowSpec:
                 else None
             ),
             checkpoints=(
-                {
-                    cp_id: cp.model_dump(exclude_none=True)
-                    for cp_id, cp in self._checkpoints.items()
-                }
+                {cp_id: cp.model_dump(exclude_none=True) for cp_id, cp in self._checkpoints.items()}
                 if self._checkpoints
                 else None
             ),
@@ -598,9 +587,7 @@ class WorkflowSpec:
                 else None
             ),
             routing=(
-                self._routing.model_dump(exclude_none=True)
-                if self._routing is not None
-                else None
+                self._routing.model_dump(exclude_none=True) if self._routing is not None else None
             ),
             qa_policy=(
                 self._qa_policy.model_dump(exclude_none=True)
@@ -666,9 +653,7 @@ class WorkflowSpec:
         )
 
         # Outputs
-        spec._outputs = [
-            OutputSpecConfig(**o) for o in data.get("output_specs", [])
-        ]
+        spec._outputs = [OutputSpecConfig(**o) for o in data.get("output_specs", [])]
 
         # MCP config
         mcp = data.get("mcp_config")
@@ -686,17 +671,11 @@ class WorkflowSpec:
             spec._phases = [PhaseConfig(**p) for p in phases]
 
         # Slots
-        spec._required_slots = [
-            SlotConfig(**s) for s in data.get("required_slots", [])
-        ]
-        spec._optional_slots = [
-            SlotConfig(**s) for s in data.get("optional_slots", [])
-        ]
+        spec._required_slots = [SlotConfig(**s) for s in data.get("required_slots", [])]
+        spec._optional_slots = [SlotConfig(**s) for s in data.get("optional_slots", [])]
 
         # Preflight rules
-        spec._preflight_rules = [
-            PreflightRuleConfig(**r) for r in data.get("preflight_rules", [])
-        ]
+        spec._preflight_rules = [PreflightRuleConfig(**r) for r in data.get("preflight_rules", [])]
 
         # Locale policy
         lp = data.get("locale_policy")
@@ -712,8 +691,7 @@ class WorkflowSpec:
         cps = data.get("checkpoints")
         if cps:
             spec._checkpoints = {
-                cp_id: CheckpointConfig.model_validate(cp_data)
-                for cp_id, cp_data in cps.items()
+                cp_id: CheckpointConfig.model_validate(cp_data) for cp_id, cp_data in cps.items()
             }
 
         tp = data.get("task_policy")
@@ -795,9 +773,5 @@ def _merge_specialist_configs(
     if explicit is None:
         return merged
     for role, value in explicit.items():
-        merged[role] = (
-            value
-            if isinstance(value, RoleConfig)
-            else RoleConfig.model_validate(value)
-        )
+        merged[role] = value if isinstance(value, RoleConfig) else RoleConfig.model_validate(value)
     return merged

@@ -68,9 +68,7 @@ class TestDeployLogic:
         assert call_kwargs["region"] == "us-east-1"
         assert call_kwargs["workflow_spec"] is None
 
-    def test_deploy_includes_workflow_when_file_present(
-        self, tmp_path, monkeypatch
-    ) -> None:
+    def test_deploy_includes_workflow_when_file_present(self, tmp_path, monkeypatch) -> None:
         monkeypatch.chdir(tmp_path)
         _write_server(tmp_path / "server.py")
         _write_workflow(tmp_path / "workflow.py")
@@ -98,9 +96,7 @@ class TestDeployLogic:
 
 
 class TestDeployBoundary:
-    def test_deploy_without_hosted_redirects_to_push(
-        self, tmp_path, monkeypatch
-    ) -> None:
+    def test_deploy_without_hosted_redirects_to_push(self, tmp_path, monkeypatch) -> None:
         monkeypatch.chdir(tmp_path)
         _write_server(tmp_path / "server.py")
 
@@ -131,9 +127,7 @@ class TestDeployBoundary:
 
 
 class TestDeployError:
-    def test_501_surfaces_byo_fallback_message(
-        self, tmp_path, monkeypatch
-    ) -> None:
+    def test_501_surfaces_byo_fallback_message(self, tmp_path, monkeypatch) -> None:
         monkeypatch.chdir(tmp_path)
         _write_server(tmp_path / "server.py")
 
@@ -157,9 +151,7 @@ class TestDeployError:
         runner = CliRunner()
         with patch("convilyn_sdk.client.ConvilynClient") as MockClient:
             instance = MockClient.return_value
-            instance.deploy_hosted_runtime = AsyncMock(
-                side_effect=ConvilynClientError(500, "boom")
-            )
+            instance.deploy_hosted_runtime = AsyncMock(side_effect=ConvilynClientError(500, "boom"))
             result = runner.invoke(cli, ["deploy", "--hosted"])
 
         assert result.exit_code == 1

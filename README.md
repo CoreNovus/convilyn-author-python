@@ -2,13 +2,11 @@
 
 [![CI](https://github.com/CoreNovus/convilyn-author-python/actions/workflows/ci.yml/badge.svg)](https://github.com/CoreNovus/convilyn-author-python/actions/workflows/ci.yml)
 
-Official Convilyn client SDK — file conversion, agentic workflows, community library.
+Official Convilyn author SDK — build & host tool servers and author workflow specs for the Convilyn AI platform.
 
-> **This repository is a public mirror.** The source of truth is Convilyn's
-> monorepo; releases are published here (and to PyPI) and the mirror is refreshed
-> from upstream. Community contributions are welcome and land in the shipped
-> package — see **[CONTRIBUTING.md](CONTRIBUTING.md)** for how (fork → PR here →
-> upstreamed to the monorepo with your authorship preserved → released).
+> **Public mirror** of Convilyn's monorepo (the source of truth). Contributions are
+> welcome and land in the shipped package — see
+> **[CONTRIBUTING.md](CONTRIBUTING.md)** (fork → PR → upstreamed, authorship preserved).
 
 ## Install
 
@@ -18,8 +16,19 @@ pip install convilyn-author
 
 ## Quickstart
 
-See **[docs/QUICKSTART.md](docs/QUICKSTART.md)** and the full docs at
-<https://docs.convilyn.corenovus.com>.
+```bash
+pip install convilyn-author
+convilyn-author init my-server     # scaffold a tool server
+cd my-server                       # edit server.py — add @server.tool functions
+convilyn-author dev                # run locally (no secret needed)
+```
+
+Free to install; you host your tool server on your own infra (Lambda / Fargate /
+VM) and Convilyn bills the *caller* of your tools, not you. See
+**[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** for the HMAC contract + billing model,
+**[docs/STABILITY.md](docs/STABILITY.md)** for the SemVer promise, and the full docs
+at <https://docs.convilyn.corenovus.com>.
+
 
 ## Contributing
 

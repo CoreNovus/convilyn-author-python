@@ -41,9 +41,7 @@ class TestMultiRoleConfigLogic:
             max_total_tool_calls=50,
             max_role_visits=2,
         )
-        round_tripped = MultiRoleConfig.model_validate(
-            config.model_dump(exclude_none=True)
-        )
+        round_tripped = MultiRoleConfig.model_validate(config.model_dump(exclude_none=True))
         assert round_tripped.active_specialists == config.active_specialists
         assert round_tripped.autonomy_level == "autonomous"
 

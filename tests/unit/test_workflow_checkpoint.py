@@ -97,9 +97,7 @@ class TestWithResumeBoundaryBoundary:
     def test_immutability_preserves_original(self) -> None:
         slot = SlotConfig(slot_id="s", type="text", question="?")
         base = _make_spec()
-        with_cp = base.with_resume_boundary(
-            "cp", after_phase="analyze", reason="r", slots=[slot]
-        )
+        with_cp = base.with_resume_boundary("cp", after_phase="analyze", reason="r", slots=[slot])
         assert base._checkpoints == {}
         assert "cp" in with_cp._checkpoints
 
@@ -115,9 +113,7 @@ class TestWithResumeBoundaryErrors:
         )
         result = validate_workflow_spec(spec.compile())
         assert result.valid is True  # warning, not error
-        assert any(
-            "unknown phase 'does_not_exist'" in w for w in result.warnings
-        )
+        assert any("unknown phase 'does_not_exist'" in w for w in result.warnings)
 
     def test_validator_errors_on_missing_slots(self) -> None:
         """Bypass-the-builder: directly construct a malformed spec dict."""

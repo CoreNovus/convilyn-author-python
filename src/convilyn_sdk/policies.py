@@ -158,9 +158,7 @@ class TimeoutPolicy(BaseModel):
         out: dict[str, dict] = {}
         if self.max_total_steps is not None:
             out["routing_policy"] = {
-                "max_steps": RoutingPolicyConfig(
-                    max_steps=self.max_total_steps
-                ).max_steps,
+                "max_steps": RoutingPolicyConfig(max_steps=self.max_total_steps).max_steps,
             }
         if self.tool_pipeline:
             out["qa_policy"] = {
@@ -245,8 +243,7 @@ class OutputValidationPolicy(BaseModel):
                 for pc in self.pattern_checks
             ],
             structural_checks=[
-                StructuralCheckConfig(type=sc.type, count=sc.count)
-                for sc in self.structure_checks
+                StructuralCheckConfig(type=sc.type, count=sc.count) for sc in self.structure_checks
             ],
         )
         return {"qa_policy": {"goal_criteria": criteria.model_dump(exclude_none=True)}}

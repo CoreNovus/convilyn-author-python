@@ -223,9 +223,7 @@ class TestAPIMethods:
     @pytest.mark.asyncio
     async def test_register_with_company(self):
         client = ConvilynClient(api_key=None, base_url="http://test")
-        client._request = AsyncMock(
-            return_value={"developer_id": "d1", "api_key": "cvl_k"}
-        )
+        client._request = AsyncMock(return_value={"developer_id": "d1", "api_key": "cvl_k"})
 
         await client.register("a@b.com", "Dev", company="Corp")
         call_args = client._request.call_args
@@ -234,9 +232,7 @@ class TestAPIMethods:
     @pytest.mark.asyncio
     async def test_register_no_overwrite_existing_key(self):
         client = ConvilynClient(api_key="cvl_existing", base_url="http://test")
-        client._request = AsyncMock(
-            return_value={"developer_id": "d1", "api_key": "cvl_new"}
-        )
+        client._request = AsyncMock(return_value={"developer_id": "d1", "api_key": "cvl_new"})
 
         await client.register("a@b.com", "Dev")
         # not overwritten

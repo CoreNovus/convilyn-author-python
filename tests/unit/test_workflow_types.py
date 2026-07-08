@@ -176,6 +176,7 @@ class TestAgentConfigModel:
         with pytest.raises(ValidationError):
             AgentConfigModel(max_iterations=51)
 
+
 class TestMCPConfigModel:
     def test_defaults(self):
         m = MCPConfigModel()
@@ -183,9 +184,7 @@ class TestMCPConfigModel:
         assert m.tools == []
 
     def test_with_values(self):
-        m = MCPConfigModel(
-            mcp_servers=["s1"], tools=["s1:t1", "s1:t2"]
-        )
+        m = MCPConfigModel(mcp_servers=["s1"], tools=["s1:t1", "s1:t2"])
         assert len(m.tools) == 2
 
 

@@ -365,9 +365,7 @@ class ToolServer:
             if reg.name == tool_name:
                 # Filter arguments to only declared schema parameters
                 allowed_params = set(reg.input_schema.get("properties", {}).keys())
-                filtered_args = {
-                    k: v for k, v in arguments.items() if k in allowed_params
-                }
+                filtered_args = {k: v for k, v in arguments.items() if k in allowed_params}
 
                 # Inject ToolContext if the function expects it
                 if reg.expects_context:
@@ -397,10 +395,7 @@ class ToolServer:
         return None
 
     def __repr__(self) -> str:
-        return (
-            f"ToolServer(name={self.name!r}, version={self.version!r}, "
-            f"tools={self.tool_names})"
-        )
+        return f"ToolServer(name={self.name!r}, version={self.version!r}, tools={self.tool_names})"
 
 
 # Backward compatibility alias

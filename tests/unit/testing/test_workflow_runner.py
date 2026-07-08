@@ -31,9 +31,7 @@ def _make_workflow(server=None):
         .add_phase("Summarize", "Summarize using `test_srv__summarize`.")
         .add_phase("Complete", "Call `complete_workflow`.")
         .with_agent_config(max_iterations=10)
-        .add_preflight_rule(
-            "r", check_type="file_count", params={"min": 1}, error_message="E"
-        )
+        .add_preflight_rule("r", check_type="file_count", params={"min": 1}, error_message="E")
     )
 
 
@@ -274,6 +272,7 @@ class TestMockRunEdgeCases:
 
         # Patch compiled spec to add absent server tool in mcp_config.tools
         import copy
+
         compiled = copy.deepcopy(runner._compile())
         compiled["mcp_config"]["tools"].append("absent-srv:some_tool")
         compiled["mcp_config"]["mcp_servers"].append("absent-srv")
@@ -282,6 +281,7 @@ class TestMockRunEdgeCases:
         # Bypass validation
         from convilyn_sdk.testing import workflow_runner as wr_module
         from convilyn_sdk.workflow_validator import WorkflowValidationResult
+
         orig_vws = wr_module.validate_workflow_spec
         orig_vtc = wr_module.validate_tool_coverage
         wr_module.validate_workflow_spec = lambda s: WorkflowValidationResult()
@@ -315,6 +315,7 @@ class TestMockRunEdgeCases:
         # Also bypass validation since it passes normally
         from convilyn_sdk.testing import workflow_runner as wr_module
         from convilyn_sdk.workflow_validator import WorkflowValidationResult
+
         orig_vws = wr_module.validate_workflow_spec
         orig_vtc = wr_module.validate_tool_coverage
         wr_module.validate_workflow_spec = lambda s: WorkflowValidationResult()
@@ -336,6 +337,7 @@ class TestMockRunEdgeCases:
         Covers: malformed tool ref (no colon), absent server, unregistered tool.
         """
         import copy
+
         server = _make_server()
         workflow = (
             WorkflowSpec("test.fb_edge", name="FBEdge", version="1.0.0")
@@ -349,20 +351,22 @@ class TestMockRunEdgeCases:
         # First compile (valid), then patch the cached spec
         compiled = copy.deepcopy(runner._compile())
         compiled["mcp_config"]["tools"] = [
-            "no_colon",           # malformed → skip (L180)
-            "absent-srv:tool",    # server not in map → skip (L184)
-            "test-srv:ghost",     # tool not found → skip (L189)
-            "test-srv:process",   # success
+            "no_colon",  # malformed → skip (L180)
+            "absent-srv:tool",  # server not in map → skip (L184)
+            "test-srv:ghost",  # tool not found → skip (L189)
+            "test-srv:process",  # success
         ]
         compiled["mcp_config"]["mcp_servers"] = ["test-srv", "absent-srv"]
         runner._compiled = compiled
 
         # Monkey-patch validate_workflow_spec and validate_tool_coverage to pass
         from convilyn_sdk.testing import workflow_runner as wr_module
+
         orig_vws = wr_module.validate_workflow_spec
         orig_vtc = wr_module.validate_tool_coverage
 
         from convilyn_sdk.workflow_validator import WorkflowValidationResult
+
         wr_module.validate_workflow_spec = lambda s: WorkflowValidationResult()
         wr_module.validate_tool_coverage = lambda s, servers: WorkflowValidationResult()
         try:
@@ -411,16 +415,12 @@ class TestExtractToolMentions:
 
     def test_tool_name_only(self):
         refs = ["test-srv:process"]
-        mentions = WorkflowTestRunner._extract_tool_mentions(
-            "Use `process` to extract.", refs
-        )
+        mentions = WorkflowTestRunner._extract_tool_mentions("Use `process` to extract.", refs)
         assert "test-srv:process" in mentions
 
     def test_no_matches(self):
         refs = ["test-srv:process"]
-        mentions = WorkflowTestRunner._extract_tool_mentions(
-            "No backtick references here.", refs
-        )
+        mentions = WorkflowTestRunner._extract_tool_mentions("No backtick references here.", refs)
         assert mentions == []
 
     def test_no_duplicates(self):
@@ -432,9 +432,7 @@ class TestExtractToolMentions:
 
     def test_multiple_tools(self):
         refs = ["srv:t1", "srv:t2"]
-        mentions = WorkflowTestRunner._extract_tool_mentions(
-            "Use `srv__t1` then `srv__t2`.", refs
-        )
+        mentions = WorkflowTestRunner._extract_tool_mentions("Use `srv__t1` then `srv__t2`.", refs)
         assert len(mentions) == 2
 
 

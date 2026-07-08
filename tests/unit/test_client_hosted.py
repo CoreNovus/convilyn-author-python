@@ -151,9 +151,7 @@ class TestErrorPropagation:
     @pytest.mark.asyncio
     async def test_rollback_propagates_404(self) -> None:
         client = ConvilynClient(api_key="cvl_t", base_url="http://test")
-        client._request = AsyncMock(
-            side_effect=ConvilynClientError(404, "runtime not found")
-        )
+        client._request = AsyncMock(side_effect=ConvilynClientError(404, "runtime not found"))
         with pytest.raises(ConvilynClientError) as exc_info:
             await client.rollback_hosted_runtime("art_missing")
         assert exc_info.value.status_code == 404

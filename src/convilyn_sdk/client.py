@@ -165,9 +165,7 @@ class ConvilynClient:
         if company:
             payload["company"] = company
 
-        result = await self._request(
-            "POST", "/developers/register", json=payload, auth=False
-        )
+        result = await self._request("POST", "/developers/register", json=payload, auth=False)
 
         # Auto-set API key for subsequent calls
         if "api_key" in result and not self._api_key:
@@ -324,9 +322,7 @@ class ConvilynClient:
             Dict with ``runtime_id``, ``version`` (now-active version),
             and ``status``.
         """
-        return await self._request(
-            "POST", f"/developers/runtimes/{runtime_id}/rollback"
-        )
+        return await self._request("POST", f"/developers/runtimes/{runtime_id}/rollback")
 
     async def get_hosted_runtime_logs(
         self,
@@ -352,7 +348,7 @@ class ConvilynClient:
             List of log entry dicts in chronological order; each entry
             carries ``timestamp``, ``message``, and ``level`` keys.
         """
-        path = f"/developers/runtimes/{runtime_id}/logs" f"?limit={int(limit)}"
+        path = f"/developers/runtimes/{runtime_id}/logs?limit={int(limit)}"
         if since:
             path = f"{path}&since={since}"
         result = await self._request("GET", path)

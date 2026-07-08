@@ -49,8 +49,7 @@ def build_spec() -> WorkflowSpec:
     return (
         WorkflowSpec("finance_review_demo", name="Finance Review (demo)")
         .with_description(
-            "Demonstrates a multi-role workflow with a mid-execution pause "
-            "for user input."
+            "Demonstrates a multi-role workflow with a mid-execution pause for user input."
         )
         .with_input(types=["document"], formats=["pdf"])
         .with_output(format="json")
@@ -102,9 +101,7 @@ def main(argv: list[str]) -> int:
         "doc-parser:list_tables",
     ]
     # RoleConfig round-trip sanity.
-    config = RoleConfig.model_validate(
-        compiled["multi_agent"]["specialists"]["data_engineer"]
-    )
+    config = RoleConfig.model_validate(compiled["multi_agent"]["specialists"]["data_engineer"])
     assert config.tools[0] == "doc-parser:extract_text"
 
     out_path = Path(__file__).parent / "finance_review.spec.json"

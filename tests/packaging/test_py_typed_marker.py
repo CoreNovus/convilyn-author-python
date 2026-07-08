@@ -17,9 +17,7 @@ from pathlib import Path
 
 def test_py_typed_marker_present() -> None:
     """The PEP 561 marker file must exist at ``src/convilyn_sdk/py.typed``."""
-    marker = (
-        Path(__file__).parent.parent.parent / "src" / "convilyn_sdk" / "py.typed"
-    )
+    marker = Path(__file__).parent.parent.parent / "src" / "convilyn_sdk" / "py.typed"
     assert marker.exists(), (
         "PEP 561 marker missing — re-create an empty file at "
         f"{marker.relative_to(Path(__file__).parent.parent.parent)} so the "

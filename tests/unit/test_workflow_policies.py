@@ -92,9 +92,7 @@ class TestTaskPolicyErrors:
 
 class TestTaskPolicyObjectState:
     def test_round_trip_via_from_dict(self) -> None:
-        spec = _make_spec().with_task_policy(
-            must_stop_when=["irrecoverable_state"]
-        )
+        spec = _make_spec().with_task_policy(must_stop_when=["irrecoverable_state"])
         compiled = spec.compile()
         loaded = WorkflowSpec._from_dict(compiled)
         assert loaded.compile()["task_policy"] == compiled["task_policy"]

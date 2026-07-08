@@ -190,9 +190,7 @@ def list_templates(*, query: str | None = None) -> list[str]:
         response.raise_for_status()
         payload = response.json()
     except httpx.HTTPError as exc:
-        raise TemplateError(
-            f"PyPI listing unavailable: {exc}", code="PYPI_UNAVAILABLE"
-        ) from exc
+        raise TemplateError(f"PyPI listing unavailable: {exc}", code="PYPI_UNAVAILABLE") from exc
     except json.JSONDecodeError as exc:
         raise TemplateError(
             f"PyPI returned a malformed JSON index: {exc}",
@@ -299,9 +297,7 @@ def install_template(suffix: str) -> TemplateEntry:
 # ── Fork ────────────────────────────────────────────────────────
 
 
-def fork_template(
-    suffix: str, new_name: str, *, target_dir: Path | None = None
-) -> Path:
+def fork_template(suffix: str, new_name: str, *, target_dir: Path | None = None) -> Path:
     """Clone the template's source repo and rewrite it under ``new_name``.
 
     The fork is created under the caller's current working directory

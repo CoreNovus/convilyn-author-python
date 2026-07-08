@@ -108,35 +108,43 @@ class ConvilynTestRunner:
         for name in self._server.tool_names:
             tool = self._server.get_tool(name)
             if tool is None:
-                results.append(ComplianceResult(
-                    passed=False,
-                    check_name=f"tool_schema:{name}",
-                    message=f"Tool '{name}' registration not found",
-                ))
+                results.append(
+                    ComplianceResult(
+                        passed=False,
+                        check_name=f"tool_schema:{name}",
+                        message=f"Tool '{name}' registration not found",
+                    )
+                )
                 continue
 
             schema = tool.input_schema
             if not isinstance(schema, dict) or "type" not in schema:
-                results.append(ComplianceResult(
-                    passed=False,
-                    check_name=f"tool_schema:{name}",
-                    message=f"Tool '{name}' has invalid input schema",
-                ))
+                results.append(
+                    ComplianceResult(
+                        passed=False,
+                        check_name=f"tool_schema:{name}",
+                        message=f"Tool '{name}' has invalid input schema",
+                    )
+                )
                 continue
 
             if not tool.description:
-                results.append(ComplianceResult(
-                    passed=False,
-                    check_name=f"tool_schema:{name}",
-                    message=f"Tool '{name}' is missing a description",
-                ))
+                results.append(
+                    ComplianceResult(
+                        passed=False,
+                        check_name=f"tool_schema:{name}",
+                        message=f"Tool '{name}' is missing a description",
+                    )
+                )
                 continue
 
-            results.append(ComplianceResult(
-                passed=True,
-                check_name=f"tool_schema:{name}",
-                message=f"Tool '{name}' schema is valid",
-            ))
+            results.append(
+                ComplianceResult(
+                    passed=True,
+                    check_name=f"tool_schema:{name}",
+                    message=f"Tool '{name}' schema is valid",
+                )
+            )
         return results
 
     def _check_manifest_synth(self) -> ComplianceResult:
@@ -174,26 +182,32 @@ class ConvilynTestRunner:
             schema = tool.input_schema
             required = schema.get("required", [])
             if required:
-                results.append(ComplianceResult(
-                    passed=True,
-                    check_name=f"tool_invocation:{name}",
-                    message=f"Tool '{name}' skipped (has required params)",
-                    details={"required": required},
-                ))
+                results.append(
+                    ComplianceResult(
+                        passed=True,
+                        check_name=f"tool_invocation:{name}",
+                        message=f"Tool '{name}' skipped (has required params)",
+                        details={"required": required},
+                    )
+                )
             else:
                 try:
                     await self._server.call_tool(name, {})
-                    results.append(ComplianceResult(
-                        passed=True,
-                        check_name=f"tool_invocation:{name}",
-                        message=f"Tool '{name}' invoked successfully with defaults",
-                    ))
+                    results.append(
+                        ComplianceResult(
+                            passed=True,
+                            check_name=f"tool_invocation:{name}",
+                            message=f"Tool '{name}' invoked successfully with defaults",
+                        )
+                    )
                 except Exception as exc:
-                    results.append(ComplianceResult(
-                        passed=False,
-                        check_name=f"tool_invocation:{name}",
-                        message=f"Tool '{name}' crashed with defaults: {exc}",
-                    ))
+                    results.append(
+                        ComplianceResult(
+                            passed=False,
+                            check_name=f"tool_invocation:{name}",
+                            message=f"Tool '{name}' crashed with defaults: {exc}",
+                        )
+                    )
         return results
 
     async def _check_ref_id_pattern(self) -> list[ComplianceResult]:
@@ -215,20 +229,24 @@ class ConvilynTestRunner:
                     has_ref = "ref_id" in raw
                     has_summary = "summary" in raw
                     if has_ref and has_summary:
-                        results.append(ComplianceResult(
-                            passed=True,
-                            check_name=f"ref_id_pattern:{name}",
-                            message=f"Tool '{name}' returns ref_id + summary",
-                        ))
+                        results.append(
+                            ComplianceResult(
+                                passed=True,
+                                check_name=f"ref_id_pattern:{name}",
+                                message=f"Tool '{name}' returns ref_id + summary",
+                            )
+                        )
                     else:
-                        results.append(ComplianceResult(
-                            passed=True,  # warning, not fail
-                            check_name=f"ref_id_pattern:{name}",
-                            message=(
-                                f"Tool '{name}' does not return ref_id+summary "
-                                "(recommended for large results)"
-                            ),
-                        ))
+                        results.append(
+                            ComplianceResult(
+                                passed=True,  # warning, not fail
+                                check_name=f"ref_id_pattern:{name}",
+                                message=(
+                                    f"Tool '{name}' does not return ref_id+summary "
+                                    "(recommended for large results)"
+                                ),
+                            )
+                        )
             except Exception:
                 pass
         return results

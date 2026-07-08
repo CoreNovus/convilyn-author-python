@@ -5,6 +5,20 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.1.1b3] — 2026-07-09
+
+### Fixed
+
+- Public-mirror CI is now green (same fixes as the consumer SDK: `ruff format`-clean
+  source, `detect-secrets-hook` secret-scan, removed the broken typecheck step).
+- Correct the generated public-repo README (it inherited the *consumer* tagline +
+  a dead `docs/QUICKSTART.md` link) and `[project.urls]` — Issues / Repository /
+  Changelog now point at `convilyn-author-python`, not the consumer repo.
+
+### Changed
+
+- Pin `ruff==0.15.6` in the `dev` extra and enforce `ruff format` on the SDK tree.
+
 ## [2.1.1b2] — 2026-07-08
 
 ### Docs

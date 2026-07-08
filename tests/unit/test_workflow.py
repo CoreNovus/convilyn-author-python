@@ -34,9 +34,7 @@ class TestWorkflowSpecConstruction:
         assert w._platform == "multi"
 
     def test_custom_version_and_category(self):
-        w = WorkflowSpec(
-            "x", name="X", version="2.5.0", category="ads", platform="meta"
-        )
+        w = WorkflowSpec("x", name="X", version="2.5.0", category="ads", platform="meta")
         assert w._version == "2.5.0"
         assert w._category == "ads"
         assert w._platform == "meta"
@@ -46,9 +44,7 @@ class TestWorkflowSpecConstruction:
         assert w._description == "Hello"
 
     def test_with_description_i18n(self):
-        w = WorkflowSpec("x", name="X").with_description_i18n(
-            {"en": "English", "zh": "Chinese"}
-        )
+        w = WorkflowSpec("x", name="X").with_description_i18n({"en": "English", "zh": "Chinese"})
         assert w._description_i18n == {"en": "English", "zh": "Chinese"}
 
     def test_with_aliases(self):
@@ -105,9 +101,7 @@ class TestImmutability:
 
 class TestInputConfig:
     def test_with_input_basic(self):
-        w = WorkflowSpec("x", name="X").with_input(
-            types=["document"], formats=["pdf"]
-        )
+        w = WorkflowSpec("x", name="X").with_input(types=["document"], formats=["pdf"])
         assert w._input.types == ["document"]
         assert w._input.formats == ["pdf"]
         assert w._input.max_size_bytes == 10_485_760
@@ -135,9 +129,7 @@ class TestInputConfig:
 
 class TestOutputConfig:
     def test_with_output_single(self):
-        w = WorkflowSpec("x", name="X").with_output(
-            format="json", type="analysis"
-        )
+        w = WorkflowSpec("x", name="X").with_output(format="json", type="analysis")
         assert len(w._outputs) == 1
         assert w._outputs[0].format == "json"
         assert w._outputs[0].additional == {"type": "analysis"}
@@ -186,9 +178,7 @@ class TestMCPConfig:
 
 class TestAgentConfig:
     def test_with_agent_config(self):
-        w = WorkflowSpec("x", name="X").with_agent_config(
-            max_iterations=15, temperature=0.5
-        )
+        w = WorkflowSpec("x", name="X").with_agent_config(max_iterations=15, temperature=0.5)
         assert w._agent_config is not None
         assert w._agent_config.max_iterations == 15
         assert w._agent_config.temperature == 0.5
@@ -196,9 +186,7 @@ class TestAgentConfig:
         assert not hasattr(w._agent_config, "system_prompt_id")
 
     def test_with_agent_config_custom_prompt(self):
-        w = WorkflowSpec("x", name="X").with_agent_config(
-            system_prompt="Custom prompt text"
-        )
+        w = WorkflowSpec("x", name="X").with_agent_config(system_prompt="Custom prompt text")
         assert w._agent_config.system_prompt == "Custom prompt text"
 
 
@@ -236,9 +224,7 @@ class TestSlots:
         assert w._required_slots[0].slot_id == "lang"
 
     def test_add_optional_slot(self):
-        w = WorkflowSpec("x", name="X").add_slot(
-            "tone", "text", "Describe tone", required=False
-        )
+        w = WorkflowSpec("x", name="X").add_slot("tone", "text", "Describe tone", required=False)
         assert len(w._optional_slots) == 1
         assert len(w._required_slots) == 0
 
@@ -295,9 +281,7 @@ class TestLocalePolicy:
         assert w._locale_policy.prompt_hint is not None
 
     def test_locale_with_affected_slots(self):
-        w = WorkflowSpec("x", name="X").with_locale_policy(
-            affected_slots=["region"]
-        )
+        w = WorkflowSpec("x", name="X").with_locale_policy(affected_slots=["region"])
         assert w._locale_policy.affected_slots == ["region"]
 
 
@@ -337,12 +321,7 @@ class TestCompile:
         assert "phases" not in compiled  # no phases → excluded
 
     def test_compile_includes_mcp_when_tools_exist(self):
-        compiled = (
-            WorkflowSpec("x", name="X")
-            .use_tools("s:t")
-            .use_servers("s")
-            .compile()
-        )
+        compiled = WorkflowSpec("x", name="X").use_tools("s:t").use_servers("s").compile()
         assert "mcp_config" in compiled
         assert compiled["mcp_config"]["tools"] == ["s:t"]
 
@@ -357,9 +336,7 @@ class TestCompile:
             .from_server(server)
             .add_phase("Phase1", "Do stuff")
             .with_agent_config(max_iterations=20)
-            .add_preflight_rule(
-                "r", check_type="file_count", params={"min": 1}, error_message="E"
-            )
+            .add_preflight_rule("r", check_type="file_count", params={"min": 1}, error_message="E")
             .add_slot("s1", "text", "Question?")
             .with_locale_policy(type="locale_independent")
             .with_aliases("Alias1")
@@ -398,9 +375,7 @@ class TestFileIO:
             .use_servers("s")
             .add_phase("P1", "Phase 1 desc")
             .with_agent_config(max_iterations=10, temperature=0.7)
-            .add_preflight_rule(
-                "r", check_type="file_count", params={"min": 1}, error_message="E"
-            )
+            .add_preflight_rule("r", check_type="file_count", params={"min": 1}, error_message="E")
             .add_slot("s1", "text", "Q?")
             .with_locale_policy(type="locale_bound", locale_market_map={"en": "us"})
             .with_aliases("A1")

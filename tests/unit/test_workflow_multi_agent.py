@@ -49,9 +49,7 @@ def _make_spec() -> WorkflowSpec:
 
 class TestWithMultiRoleLogic:
     def test_bare_string_roles_compile_to_wire_shape(self) -> None:
-        spec = _make_spec().with_multi_role(
-            active_specialists=["data_engineer", "qa_analyst"]
-        )
+        spec = _make_spec().with_multi_role(active_specialists=["data_engineer", "qa_analyst"])
         compiled = spec.compile()
         assert "multi_agent" in compiled
         block = compiled["multi_agent"]
@@ -144,9 +142,7 @@ class TestWithMultiRoleBoundary:
 class TestWithMultiRoleErrors:
     def test_duplicate_string_roles_rejected(self) -> None:
         with pytest.raises(ValueError, match="duplicate role"):
-            _make_spec().with_multi_role(
-                active_specialists=["data_engineer", "data_engineer"]
-            )
+            _make_spec().with_multi_role(active_specialists=["data_engineer", "data_engineer"])
 
     def test_empty_role_string_rejected(self) -> None:
         with pytest.raises(ValueError, match="role cannot be empty"):

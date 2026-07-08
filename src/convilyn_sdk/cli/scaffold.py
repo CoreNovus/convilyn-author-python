@@ -28,7 +28,7 @@ if __name__ == "__main__":
     server.run()
 '''
 
-PYPROJECT_TEMPLATE = '''\
+PYPROJECT_TEMPLATE = """\
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -46,7 +46,7 @@ dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.23.0",
 ]
-'''
+"""
 
 TEST_TEMPLATE = '''\
 """Tests for {name} server."""
@@ -223,7 +223,7 @@ async def test_workflow_dry_run(workflow_runner):
     assert result.passed, f"Dry run errors: {{result.errors}}"
 '''
 
-DOCKERFILE_TEMPLATE = '''\
+DOCKERFILE_TEMPLATE = """\
 FROM public.ecr.aws/lambda/python:3.12
 
 COPY --from=public.ecr.aws/awsguru/aws-lambda-web-adapter:0.8.4 \\
@@ -241,7 +241,7 @@ RUN pip install --no-cache-dir .
 COPY . .
 
 CMD ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
-'''
+"""
 
 
 def scaffold_project(

@@ -40,8 +40,7 @@ async def get_forecast(location: str, days: int = 7) -> dict:
     In production, this would call a real weather API.
     """
     forecast = [
-        {"day": i + 1, "high": 24 + i, "low": 16 + i, "condition": "sunny"}
-        for i in range(days)
+        {"day": i + 1, "high": 24 + i, "low": 16 + i, "condition": "sunny"} for i in range(days)
     ]
     result = {"location": location, "days": days, "forecast": forecast}
     ref_id = await server.data_store.store(result)

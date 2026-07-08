@@ -101,8 +101,7 @@ class TestFileLoadingSecurity:
         outside_dir.mkdir()
         server_file = outside_dir / "server.py"
         server_file.write_text(
-            'from convilyn_sdk import ToolServer\n'
-            'server = ToolServer(name="t", description="t")\n'
+            'from convilyn_sdk import ToolServer\nserver = ToolServer(name="t", description="t")\n'
         )
 
         cwd = tmp_path / "project"
@@ -151,10 +150,10 @@ class TestFileLoadingSecurity:
         monkeypatch.chdir(tmp_path)
         server_file = tmp_path / "server.py"
         server_file.write_text(
-            'from convilyn_sdk import ToolServer\n'
+            "from convilyn_sdk import ToolServer\n"
             'server = ToolServer(name="ok", description="ok")\n'
             '@server.tool(description="t")\n'
-            'async def t(x: str) -> dict:\n'
+            "async def t(x: str) -> dict:\n"
             '    return {"x": x}\n'
         )
 
@@ -167,10 +166,10 @@ class TestFileLoadingSecurity:
         sub.mkdir()
         server_file = sub / "app.py"
         server_file.write_text(
-            'from convilyn_sdk import ToolServer\n'
+            "from convilyn_sdk import ToolServer\n"
             'server = ToolServer(name="sub", description="sub")\n'
             '@server.tool(description="t")\n'
-            'async def t(x: str) -> dict:\n'
+            "async def t(x: str) -> dict:\n"
             '    return {"x": x}\n'
         )
 
@@ -222,12 +221,14 @@ class TestSecurityHeaders:
 
     @pytest.mark.asyncio
     async def test_mcp_has_security_headers(self, app):
-        rpc_body = json.dumps({
-            "jsonrpc": "2.0",
-            "method": "tools/call",
-            "params": {"name": "echo", "arguments": {"message": "hi"}},
-            "id": "1",
-        }).encode()
+        rpc_body = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "method": "tools/call",
+                "params": {"name": "echo", "arguments": {"message": "hi"}},
+                "id": "1",
+            }
+        ).encode()
         _, _, headers = await _simulate_request(app, "POST", "/mcp", body=rpc_body)
         assert self._get_header(headers, b"x-content-type-options") == b"nosniff"
 
@@ -306,12 +307,14 @@ class TestMCPEndpoint:
     @pytest.mark.asyncio
     async def test_mcp_tool_call(self):
         app = _create_asgi_app(_make_server(), allow_insecure=True)
-        body = json.dumps({
-            "jsonrpc": "2.0",
-            "method": "tools/call",
-            "params": {"name": "echo", "arguments": {"message": "hi"}},
-            "id": "1",
-        }).encode()
+        body = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "method": "tools/call",
+                "params": {"name": "echo", "arguments": {"message": "hi"}},
+                "id": "1",
+            }
+        ).encode()
         status, data, _ = await _simulate_request(app, "POST", "/mcp", body=body)
         assert status == 200
         assert data["result"]["success"] is True
@@ -320,12 +323,14 @@ class TestMCPEndpoint:
     async def test_get_tool_data_auto_registered(self):
         """get_tool_data tool should be auto-registered in protocol layer."""
         app = _create_asgi_app(_make_server(), allow_insecure=True)
-        body = json.dumps({
-            "jsonrpc": "2.0",
-            "method": "tools/call",
-            "params": {"name": "get_tool_data", "arguments": {"ref_id": "td_nonexistent0"}},
-            "id": "2",
-        }).encode()
+        body = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "method": "tools/call",
+                "params": {"name": "get_tool_data", "arguments": {"ref_id": "td_nonexistent0"}},
+                "id": "2",
+            }
+        ).encode()
         status, data, _ = await _simulate_request(app, "POST", "/mcp", body=body)
         assert status == 200
         # Should return not found but not crash
@@ -379,11 +384,14 @@ class TestArgumentFiltering:
     @pytest.mark.asyncio
     async def test_extra_args_are_filtered(self):
         server = _make_server()
-        result = await server.call_tool("echo", {
-            "message": "hello",
-            "admin": True,
-            "__class__": "exploit",
-        })
+        result = await server.call_tool(
+            "echo",
+            {
+                "message": "hello",
+                "admin": True,
+                "__class__": "exploit",
+            },
+        )
         assert result == {"echo": "hello"}
 
     @pytest.mark.asyncio
@@ -499,12 +507,14 @@ def _hmac_headers(secret: str, body: bytes, *, ts: int = 1_000) -> list[tuple[by
     ]
 
 
-_MCP_BODY = json.dumps({
-    "jsonrpc": "2.0",
-    "method": "tools/call",
-    "params": {"name": "echo", "arguments": {"message": "hi"}},
-    "id": "1",
-}).encode()
+_MCP_BODY = json.dumps(
+    {
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {"name": "echo", "arguments": {"message": "hi"}},
+        "id": "1",
+    }
+).encode()
 
 
 class TestInboundAuthFailClosed:
@@ -520,9 +530,7 @@ class TestInboundAuthFailClosed:
     async def test_no_secret_no_optin_rejects_mcp(self):
         # Default app: allow_insecure defaults to False → fail closed.
         app = _create_asgi_app(_make_server(), SDKConfig(hmac_secret=None))
-        status, data, _ = await _simulate_request(
-            app, "POST", "/mcp", body=_MCP_BODY
-        )
+        status, data, _ = await _simulate_request(app, "POST", "/mcp", body=_MCP_BODY)
         assert status == 401
         assert data["code"] == "INVALID_SIGNATURE"
 
@@ -536,12 +544,8 @@ class TestInboundAuthFailClosed:
 
     @pytest.mark.asyncio
     async def test_explicit_insecure_allows_mcp(self):
-        app = _create_asgi_app(
-            _make_server(), SDKConfig(hmac_secret=None), allow_insecure=True
-        )
-        status, data, _ = await _simulate_request(
-            app, "POST", "/mcp", body=_MCP_BODY
-        )
+        app = _create_asgi_app(_make_server(), SDKConfig(hmac_secret=None), allow_insecure=True)
+        status, data, _ = await _simulate_request(app, "POST", "/mcp", body=_MCP_BODY)
         assert status == 200
         assert data["result"]["success"] is True
 
@@ -568,9 +572,7 @@ class TestInboundAuthFailClosed:
             (b"x-convilyn-signature", b"deadbeef"),
             (b"x-convilyn-timestamp", b"1000"),
         ]
-        status, _, _ = await _simulate_request(
-            app, "POST", "/mcp", body=_MCP_BODY, headers=headers
-        )
+        status, _, _ = await _simulate_request(app, "POST", "/mcp", body=_MCP_BODY, headers=headers)
         assert status == 401
 
 
@@ -626,10 +628,19 @@ class TestStartServerFailClosed:
         server_runtime.start_server(_make_server())
         assert ran["ok"] is True
 
-    @pytest.mark.parametrize("val,expected", [
-        ("1", True), ("true", True), ("YES", True), ("on", True),
-        ("0", False), ("false", False), ("", False), ("maybe", False),
-    ])
+    @pytest.mark.parametrize(
+        "val,expected",
+        [
+            ("1", True),
+            ("true", True),
+            ("YES", True),
+            ("on", True),
+            ("0", False),
+            ("false", False),
+            ("", False),
+            ("maybe", False),
+        ],
+    )
     def test_dev_insecure_env_parsing(self, monkeypatch, val, expected):
         from convilyn_sdk._internal.server_runtime import _dev_insecure_requested
 

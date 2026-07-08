@@ -49,9 +49,7 @@ def test_url_resolving_to_private_ip_is_unsafe(ip: str) -> None:
 
 
 def test_url_resolving_to_public_ip_is_safe() -> None:
-    with patch.object(
-        urlpolicy.socket, "getaddrinfo", return_value=_addrinfo("140.82.121.4")
-    ):
+    with patch.object(urlpolicy.socket, "getaddrinfo", return_value=_addrinfo("140.82.121.4")):
         assert urlpolicy.is_safe_url("https://github.com/org/repo") is True
 
 
@@ -75,9 +73,7 @@ def test_blocked_suffix_is_unsafe_without_resolving(host: str) -> None:
 
 
 def test_dns_failure_is_unsafe() -> None:
-    with patch.object(
-        urlpolicy.socket, "getaddrinfo", side_effect=socket.gaierror("NXDOMAIN")
-    ):
+    with patch.object(urlpolicy.socket, "getaddrinfo", side_effect=socket.gaierror("NXDOMAIN")):
         assert urlpolicy.is_safe_url("https://does-not-exist.example/x") is False
 
 

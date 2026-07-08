@@ -45,17 +45,16 @@ dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
-    "ruff>=0.4.0",
+    "ruff==0.15.6",
 ]
 
 [project.urls]
 Homepage = "https://convilyn.corenovus.com"
 Documentation = "https://docs.convilyn.corenovus.com"
-Issues = "https://github.com/CoreNovus/convilyn-python/issues"
-# Repository / Source Code / Changelog / Deployment Guide URLs are intentionally
-# omitted for the beta: the source lives in the private monorepo (ADR-004, SSOT).
-# They will be restored pointing at the public community mirror once it graduates
-# (#2166). CHANGELOG + the DEPLOYMENT walkthrough ship inside the sdist (below).
+Repository = "https://github.com/CoreNovus/convilyn-author-python"
+"Source Code" = "https://github.com/CoreNovus/convilyn-author-python"
+Issues = "https://github.com/CoreNovus/convilyn-author-python/issues"
+Changelog = "https://github.com/CoreNovus/convilyn-author-python/blob/main/CHANGELOG.md"
 
 [project.scripts]
 # Author-SDK entry point. The v1.x legacy ``convilyn`` alias was removed in

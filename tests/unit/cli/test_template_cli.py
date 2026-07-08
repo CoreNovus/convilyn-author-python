@@ -135,13 +135,9 @@ class TestTemplateForkCli:
         runner = CliRunner()
         with patch(
             "convilyn_sdk._internal.templates.fork_template",
-            side_effect=TemplateError(
-                "Destination exists", code="DESTINATION_EXISTS"
-            ),
+            side_effect=TemplateError("Destination exists", code="DESTINATION_EXISTS"),
         ):
-            result = runner.invoke(
-                cli, ["template", "fork", "blog", "my-blog"]
-            )
+            result = runner.invoke(cli, ["template", "fork", "blog", "my-blog"])
         assert result.exit_code == 1
         assert "DESTINATION_EXISTS" in result.output
 

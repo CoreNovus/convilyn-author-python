@@ -172,6 +172,7 @@ class TestIsToolContextParam:
         async def fn(ctx: ToolContext) -> None: ...
 
         import inspect
+
         param = list(inspect.signature(fn).parameters.values())[0]
         assert _is_tool_context_param(param) is True
 
@@ -193,6 +194,7 @@ class TestIsToolContextParam:
         async def fn(x) -> None: ...  # type: ignore[no-untyped-def]
 
         import inspect
+
         param = list(inspect.signature(fn).parameters.values())[0]
         assert _is_tool_context_param(param) is False
 
@@ -201,6 +203,7 @@ class TestIsToolContextParam:
         async def fn(x: int) -> None: ...
 
         import inspect
+
         param = list(inspect.signature(fn).parameters.values())[0]
         assert _is_tool_context_param(param) is False
 

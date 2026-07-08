@@ -62,10 +62,7 @@ def _headers_to_dict(raw_headers: list[tuple[bytes, bytes]] | None) -> dict[str,
     """Lower-case ASGI header tuples into a {name: value} dict."""
     if not raw_headers:
         return {}
-    return {
-        name.decode("latin-1").lower(): value.decode("latin-1")
-        for name, value in raw_headers
-    }
+    return {name.decode("latin-1").lower(): value.decode("latin-1") for name, value in raw_headers}
 
 
 def _create_asgi_app(
@@ -104,12 +101,16 @@ def _create_asgi_app(
         method = scope.get("method", "GET")
 
         if path == "/health" and method == "GET":
-            await _send_json(send, 200, {
-                "status": "healthy",
-                "server": server.name,
-                "version": server.version,
-                "tool_count": len(server.tool_names),
-            })
+            await _send_json(
+                send,
+                200,
+                {
+                    "status": "healthy",
+                    "server": server.name,
+                    "version": server.version,
+                    "tool_count": len(server.tool_names),
+                },
+            )
             return
 
         if path == "/manifest" and method == "GET":
@@ -222,21 +223,25 @@ async def _read_body(receive: Any) -> bytes:
 async def _send_json(send: Any, status: int, data: dict[str, Any]) -> None:
     """Send a JSON HTTP response with security headers."""
     body = json.dumps(data).encode("utf-8")
-    await send({
-        "type": "http.response.start",
-        "status": status,
-        "headers": [
-            [b"content-type", b"application/json"],
-            [b"content-length", str(len(body)).encode("utf-8")],
-            [b"x-content-type-options", b"nosniff"],
-            [b"x-frame-options", b"DENY"],
-            [b"cache-control", b"no-store"],
-        ],
-    })
-    await send({
-        "type": "http.response.body",
-        "body": body,
-    })
+    await send(
+        {
+            "type": "http.response.start",
+            "status": status,
+            "headers": [
+                [b"content-type", b"application/json"],
+                [b"content-length", str(len(body)).encode("utf-8")],
+                [b"x-content-type-options", b"nosniff"],
+                [b"x-frame-options", b"DENY"],
+                [b"cache-control", b"no-store"],
+            ],
+        }
+    )
+    await send(
+        {
+            "type": "http.response.body",
+            "body": body,
+        }
+    )
 
 
 def start_server(

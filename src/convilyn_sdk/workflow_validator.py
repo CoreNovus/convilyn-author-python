@@ -69,9 +69,7 @@ def validate_workflow_spec(spec: dict[str, Any]) -> WorkflowValidationResult:
 
     # 3. spec_id naming
     if not _SPEC_ID_PATTERN.match(spec_id):
-        result.add_error(
-            f"spec_id must be alphanumeric with dots/underscores, got: {spec_id}"
-        )
+        result.add_error(f"spec_id must be alphanumeric with dots/underscores, got: {spec_id}")
 
     # 4. MCP tool references
     mcp_config = spec.get("mcp_config")
@@ -188,9 +186,7 @@ def validate_workflow_spec(spec: dict[str, Any]) -> WorkflowValidationResult:
         max_steps = routing.get("max_steps")
         if max_steps is not None:
             if not isinstance(max_steps, int) or max_steps < 1 or max_steps > 200:
-                result.add_error(
-                    f"routing.max_steps must be 1-200, got: {max_steps}"
-                )
+                result.add_error(f"routing.max_steps must be 1-200, got: {max_steps}")
             elif max_steps > 100:
                 result.add_warning(
                     f"routing.max_steps={max_steps} exceeds the 100-step advisory "
@@ -230,8 +226,7 @@ def validate_tool_coverage(
     for tool_ref in mcp_config.get("tools", []):
         if tool_ref not in available:
             result.add_error(
-                f"Tool {tool_ref!r} not found in provided servers. "
-                f"Available: {sorted(available)}"
+                f"Tool {tool_ref!r} not found in provided servers. Available: {sorted(available)}"
             )
 
     # Check server names

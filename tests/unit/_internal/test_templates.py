@@ -66,9 +66,7 @@ def _pypi_simple_payload(*names: str) -> dict:
     return {"projects": [{"name": n} for n in names]}
 
 
-def _mock_response(
-    status_code: int = 200, json_payload: dict | None = None
-) -> MagicMock:
+def _mock_response(status_code: int = 200, json_payload: dict | None = None) -> MagicMock:
     resp = MagicMock()
     resp.status_code = status_code
     resp.json.return_value = json_payload or {}
@@ -155,9 +153,7 @@ class TestListErrors:
         assert exc_info.value.code == "PYPI_UNAVAILABLE"
 
     def test_missing_projects_key_rejected(self) -> None:
-        with patch(
-            "httpx.get", return_value=_mock_response(json_payload={"foo": "bar"})
-        ):
+        with patch("httpx.get", return_value=_mock_response(json_payload={"foo": "bar"})):
             with pytest.raises(TemplateError) as exc_info:
                 list_templates()
         assert exc_info.value.code == "PYPI_MALFORMED"
@@ -205,9 +201,7 @@ class TestCatalogState:
 
 class TestFetchMetadata:
     def test_returns_info_block_on_200(self) -> None:
-        payload = {
-            "info": {"version": "1.0.0", "project_urls": {"Source": "https://x"}}
-        }
+        payload = {"info": {"version": "1.0.0", "project_urls": {"Source": "https://x"}}}
         with patch("httpx.get", return_value=_mock_response(json_payload=payload)):
             info = fetch_template_metadata("blog")
         assert info["version"] == "1.0.0"
@@ -243,9 +237,7 @@ class TestInstallTemplate:
             }
         )
         with (
-            patch(
-                "convilyn_sdk._internal.templates.subprocess.run", return_value=pip_ok
-            ) as run,
+            patch("convilyn_sdk._internal.templates.subprocess.run", return_value=pip_ok) as run,
             patch("httpx.get", return_value=metadata),
         ):
             entry = install_template("blog")
@@ -267,9 +259,7 @@ class TestInstallTemplate:
         pip_fail.returncode = 1
         pip_fail.stdout = ""
         pip_fail.stderr = "No matching distribution"
-        with patch(
-            "convilyn_sdk._internal.templates.subprocess.run", return_value=pip_fail
-        ):
+        with patch("convilyn_sdk._internal.templates.subprocess.run", return_value=pip_fail):
             with pytest.raises(TemplateError) as exc_info:
                 install_template("missing")
         assert exc_info.value.code == "PIP_FAILED"
@@ -294,13 +284,9 @@ class TestInstallTemplate:
             ]
         )
         pip_ok = MagicMock(returncode=0, stdout="", stderr="")
-        metadata = _mock_response(
-            json_payload={"info": {"version": "0.2.0", "project_urls": {}}}
-        )
+        metadata = _mock_response(json_payload={"info": {"version": "0.2.0", "project_urls": {}}})
         with (
-            patch(
-                "convilyn_sdk._internal.templates.subprocess.run", return_value=pip_ok
-            ),
+            patch("convilyn_sdk._internal.templates.subprocess.run", return_value=pip_ok),
             patch("httpx.get", return_value=metadata),
         ):
             install_template("blog")
@@ -323,9 +309,7 @@ class TestForkTemplate:
         import socket as _socket
 
         addrinfo = [(_socket.AF_INET, _socket.SOCK_STREAM, 6, "", ("140.82.121.4", 0))]
-        with patch(
-            "convilyn_sdk._internal.urlpolicy.socket.getaddrinfo", return_value=addrinfo
-        ):
+        with patch("convilyn_sdk._internal.urlpolicy.socket.getaddrinfo", return_value=addrinfo):
             yield
 
     def _metadata_with(self, source: str | None) -> MagicMock:
@@ -460,9 +444,7 @@ class TestCloneUrlPolicy:
         assert templates._is_clonable(url) is False
 
     def test_env_override_extends_allowlist(self, monkeypatch) -> None:
-        monkeypatch.setenv(
-            templates.ENV_TEMPLATE_CLONE_HOSTS, "git.mycorp.example, other.example"
-        )
+        monkeypatch.setenv(templates.ENV_TEMPLATE_CLONE_HOSTS, "git.mycorp.example, other.example")
         assert templates._is_clonable("https://git.mycorp.example/team/repo") is True
         # The default allowlist is widened, never replaced.
         assert templates._is_clonable("https://github.com/org/repo") is True
@@ -496,9 +478,7 @@ class TestCloneUrlPolicy:
             ),
         )
         metadata.raise_for_status = MagicMock()
-        private = [
-            (_socket.AF_INET, _socket.SOCK_STREAM, 6, "", ("169.254.169.254", 0))
-        ]
+        private = [(_socket.AF_INET, _socket.SOCK_STREAM, 6, "", ("169.254.169.254", 0))]
         with (
             patch("httpx.get", return_value=metadata),
             patch(
