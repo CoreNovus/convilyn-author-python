@@ -4,7 +4,7 @@ import pytest
 
 from convilyn_sdk import ToolServer
 from convilyn_sdk._internal.models import JSONRPCRequest
-from convilyn_sdk._internal.protocol import handle_jsonrpc_request
+from convilyn_sdk._internal.protocol import _clamp_summary, handle_jsonrpc_request
 
 
 def _make_server():
@@ -35,6 +35,37 @@ class TestProtocol:
         assert response.result["success"] is True
         assert response.result["data"]["echo"] == "hi"
         assert response.id == "req-1"
+
+    @pytest.mark.asyncio
+    async def test_tools_call_result_carries_summary_and_status(self):
+        """Cross-SDK envelope parity with the TS author SDK's ToolResultWire
+        (test-community finding #5/E03/F08): a successful call must surface
+        `summary`/`status` alongside the legacy `success`/`data` fields."""
+        server = _make_server()
+        request = JSONRPCRequest(
+            method="tools/call",
+            params={"name": "echo", "arguments": {"message": "hi"}},
+            id="req-1b",
+        )
+        response = await handle_jsonrpc_request(request, server)
+        assert response.result["status"] == "ok"
+        assert response.result["summary"] == "Tool 'echo' executed successfully."
+
+    @pytest.mark.asyncio
+    async def test_tools_call_surfaces_author_supplied_summary(self):
+        server = ToolServer(name="proto-test-2", description="Test", version="0.1.0")
+
+        @server.tool(description="Reports its own summary")
+        async def with_summary() -> dict:
+            return {"value": 1, "summary": "did the thing"}
+
+        request = JSONRPCRequest(
+            method="tools/call",
+            params={"name": "with_summary", "arguments": {}},
+            id="req-1c",
+        )
+        response = await handle_jsonrpc_request(request, server)
+        assert response.result["summary"] == "did the thing"
 
     @pytest.mark.asyncio
     async def test_unknown_method(self):
@@ -80,6 +111,8 @@ class TestProtocol:
         assert response.error is None  # JSON-RPC level OK
         assert response.result["success"] is False
         assert "execution failed" in response.result["error"]["message"]
+        assert response.result["status"] == "tool_error"
+        assert response.result["summary"] == response.result["error"]["message"]
 
     @pytest.mark.asyncio
     async def test_execution_time_tracked(self):
@@ -121,6 +154,7 @@ class TestProtocol:
         response = await handle_jsonrpc_request(request, server)
         assert response.error is None
         assert response.result["success"] is False
+        assert response.result["status"] == "tool_error"
 
     @pytest.mark.asyncio
     async def test_get_tool_data_missing_ref_id(self):
@@ -133,3 +167,14 @@ class TestProtocol:
         response = await handle_jsonrpc_request(request, server)
         assert response.error is not None
         assert response.error.code == -32602
+
+
+class TestClampSummary:
+    def test_passes_short_summary_through_unchanged(self):
+        assert _clamp_summary("short") == "short"
+
+    def test_truncates_at_the_wire_bound(self):
+        assert len(_clamp_summary("x" * 3000)) == 2000
+
+    def test_falls_back_to_a_placeholder_for_an_empty_string(self):
+        assert _clamp_summary("") == "Tool executed."

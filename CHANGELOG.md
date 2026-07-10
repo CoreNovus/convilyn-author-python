@@ -5,6 +5,37 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.1.1b4] — 2026-07-10
+
+### Added
+
+- **Confirmation-handshake tokens**: `mint_confirmation_token` /
+  `verify_confirmation_token` / `ConfirmationInvalidError` /
+  `CONFIRMATION_TTL_SECONDS`, now exported from `convilyn_sdk`. Previously
+  only the TypeScript author SDK implemented this despite the docs claiming
+  Python compatibility — the wire format was always byte-for-byte compatible
+  by specification, but the Python package didn't expose a function to use
+  it. Port of `sdk/author-ts/src/confirmation.ts`.
+
+### Fixed
+
+- **`import convilyn_sdk` no longer crashes on Python 3.10.**
+  `_internal/templates.py` used `from datetime import UTC` (Python 3.11+);
+  now uses `datetime.timezone.utc`, which has always been available. (Not
+  previously caught by testing because nothing exercised template
+  installation on 3.10.)
+- **`WorkflowSpec` now enforces the same `name` (≤80 chars) and tool-count
+  (≤20) bounds as the TypeScript author SDK.** Previously a spec that
+  compiled successfully in Python could still be rejected downstream by a
+  TS-side or platform check applying the documented limit.
+- **Tool-call JSON-RPC responses now carry `summary`/`status` fields**,
+  matching the TypeScript author SDK's richer wire envelope
+  (`tool-result-wire.ts`). Additive — the existing `success` / `data` /
+  `error` / `execution_time_ms` fields are unchanged.
+- Corrected the README/PyPI dependency description: `convilyn-author` wraps
+  `uvicorn` + an internal MCP runtime, not FastAPI (the package has never
+  depended on FastAPI).
+
 ## [2.1.1b3] — 2026-07-09
 
 ### Fixed

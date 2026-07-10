@@ -142,6 +142,32 @@ class TestValidateWorkflowSpec:
         result = validate_workflow_spec(spec)
         assert any("not listed in mcp_servers" in e for e in result.errors)
 
+    def test_name_at_max_length_is_valid(self):
+        spec = _minimal_valid_spec()
+        spec["name"] = "x" * 80
+        result = validate_workflow_spec(spec)
+        assert result.valid is True
+
+    def test_name_over_max_length_is_rejected(self):
+        spec = _minimal_valid_spec()
+        spec["name"] = "x" * 81
+        result = validate_workflow_spec(spec)
+        assert result.valid is False
+        assert any("name must be 1-80 characters" in e for e in result.errors)
+
+    def test_tools_at_max_count_is_valid(self):
+        spec = _minimal_valid_spec()
+        spec["mcp_config"]["tools"] = [f"my-server:tool_{i}" for i in range(20)]
+        result = validate_workflow_spec(spec)
+        assert result.valid is True
+
+    def test_tools_over_max_count_is_rejected(self):
+        spec = _minimal_valid_spec()
+        spec["mcp_config"]["tools"] = [f"my-server:tool_{i}" for i in range(21)]
+        result = validate_workflow_spec(spec)
+        assert result.valid is False
+        assert any("at most 20 entries" in e for e in result.errors)
+
     def test_no_tools_warning(self):
         spec = _minimal_valid_spec()
         spec["mcp_config"]["tools"] = []

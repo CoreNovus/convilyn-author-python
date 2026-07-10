@@ -25,6 +25,12 @@ the ``convilyn-author`` CLI — follows Semantic Versioning. See
 ``convilyn_sdk._internal`` is implementation detail and exempt.
 """
 
+from convilyn_sdk._internal.confirmation import (
+    CONFIRMATION_TTL_SECONDS,
+    ConfirmationInvalidError,
+    mint_confirmation_token,
+    verify_confirmation_token,
+)
 from convilyn_sdk._version import __version__
 from convilyn_sdk.agent_role import AgentRole
 from convilyn_sdk.catalog import ToolCatalog
@@ -66,6 +72,8 @@ __all__ = [
     "CheckpointConfig",
     "ComplianceReport",
     "ComplianceResult",
+    "CONFIRMATION_TTL_SECONDS",
+    "ConfirmationInvalidError",
     "ConvilynClient",
     "ConvilynManifest",
     "ConvilynServer",
@@ -73,6 +81,7 @@ __all__ = [
     "FallbackPolicy",
     "HumanReviewPolicy",
     "InMemoryDataStore",
+    "mint_confirmation_token",
     "MultiRoleConfig",
     "OutputValidationPolicy",
     "PatternCheck",
@@ -90,6 +99,7 @@ __all__ = [
     "ToolServer",
     "ToolSpec",
     "ToolStage",
+    "verify_confirmation_token",
     "WorkflowSpec",
     "__version__",
 ]

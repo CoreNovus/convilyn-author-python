@@ -6,7 +6,8 @@ Build tool servers + workflow specs for the Convilyn AI workflow platform.
 > (no server hosting, no workflow authoring), install
 > [`convilyn`](https://pypi.org/project/convilyn/) instead. The two
 > packages are intentionally separate so consumers don't pay the
-> uvicorn / FastAPI dependency cost.
+> uvicorn dependency cost (`convilyn-author` wraps a lightweight
+> internal MCP-over-uvicorn runtime, not FastAPI).
 
 > **Free to install, paid to deploy.** `pip install convilyn-author` is
 > free. You host your tool server on your own infrastructure (Lambda,

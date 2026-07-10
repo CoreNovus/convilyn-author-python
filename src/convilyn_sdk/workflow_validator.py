@@ -34,6 +34,13 @@ _SEMVER_PATTERN = re.compile(r"^\d+\.\d+\.\d+$")
 _SPEC_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_][a-zA-Z0-9_.]+$")
 _TOOL_REF_PATTERN = re.compile(r"^[a-zA-Z0-9_-]+:[a-zA-Z0-9_.]+$")
 
+# Cross-SDK parity with sdk/author-ts/src/workflow.ts's MAX_NAME / MAX_TOOLS —
+# the TypeScript builder enforces these at construction time; this validator
+# is Python's equivalent enforcement point (see workflow.py's WorkflowSpec,
+# which does not itself bound `name` / `use_tools()`).
+_MAX_NAME = 80
+_MAX_TOOLS = 20
+
 
 def validate_workflow_spec(spec: dict[str, Any]) -> WorkflowValidationResult:
     """Validate a compiled workflow spec dict.
@@ -192,6 +199,19 @@ def validate_workflow_spec(spec: dict[str, Any]) -> WorkflowValidationResult:
                     f"routing.max_steps={max_steps} exceeds the 100-step advisory "
                     "threshold; verify estimated_cost_u is calibrated."
                 )
+
+    # 14. Name / tool-count bounds — cross-SDK parity with the TS author
+    # SDK's WorkflowSpec, which rejects these at construction time.
+    name = spec.get("name")
+    if isinstance(name, str) and (len(name) < 1 or len(name) > _MAX_NAME):
+        result.add_error(f"name must be 1-{_MAX_NAME} characters (got {len(name)})")
+
+    if mcp_config:
+        tool_count = len(mcp_config.get("tools", []))
+        if tool_count > _MAX_TOOLS:
+            result.add_error(
+                f"mcp_config.tools must have at most {_MAX_TOOLS} entries (got {tool_count})"
+            )
 
     return result
 

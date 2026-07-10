@@ -21,12 +21,21 @@ class MCPError(BaseModel):
 
 
 class MCPToolResult(BaseModel):
-    """Result from a single tool execution."""
+    """Result from a single tool execution.
+
+    ``summary``/``status`` are additive fields kept in cross-SDK parity with
+    the TypeScript author SDK's richer wire envelope
+    (``tool-result-wire.ts``'s ``ToolResultWire``). ``success``/``error``/
+    ``execution_time_ms`` remain for backward compatibility — the platform
+    gateway client reads both shapes today, so adding these is safe.
+    """
 
     success: bool = True
     data: dict[str, Any] | None = None
     error: MCPError | None = None
     execution_time_ms: float | None = None
+    summary: str | None = None
+    status: str | None = None
 
 
 class JSONRPCRequest(BaseModel):

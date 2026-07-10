@@ -27,6 +27,22 @@ METHOD_NOT_FOUND = -32601
 INVALID_PARAMS = -32602
 INTERNAL_ERROR = -32603
 
+# Wire bound for MCPToolResult.summary — matches the TS author SDK's
+# tool-result-wire.ts SUMMARY_MAX so the two envelopes stay in lockstep.
+_SUMMARY_MAX = 2000
+
+
+def _clamp_summary(summary: str) -> str:
+    """Clamp a summary to the wire bound (1-2000 chars), never empty."""
+    trimmed = summary[:_SUMMARY_MAX] if len(summary) > _SUMMARY_MAX else summary
+    return trimmed if trimmed else "Tool executed."
+
+
+def _derive_summary(data: dict[str, Any], default: str) -> str:
+    """Use the author-supplied `data["summary"]` when present, else `default`."""
+    candidate = data.get("summary")
+    return _clamp_summary(candidate if isinstance(candidate, str) else default)
+
 
 def _is_dev_mode() -> bool:
     """Check if running in dev mode (localhost)."""
@@ -89,6 +105,8 @@ async def handle_jsonrpc_request(
             success=True,
             data=data,
             execution_time_ms=round(elapsed_ms, 2),
+            status="ok",
+            summary=_derive_summary(data, f"Tool '{tool_name}' executed successfully."),
         )
     except Exception as exc:
         elapsed_ms = (time.monotonic() - start) * 1000
@@ -115,6 +133,8 @@ async def handle_jsonrpc_request(
                 details=error_details,
             ),
             execution_time_ms=round(elapsed_ms, 2),
+            status="tool_error",
+            summary=_clamp_summary(error_message),
         )
 
     return JSONRPCResponse(
@@ -142,20 +162,30 @@ async def _handle_get_tool_data(
     try:
         data = await tool_handler.data_store.get(ref_id)
         if data is None:
+            not_found_message = f"No data found for ref_id '{ref_id}'"
             tool_result = MCPToolResult(
                 success=False,
                 error=MCPError(
                     code="NOT_FOUND",
-                    message=f"No data found for ref_id '{ref_id}'",
+                    message=not_found_message,
                 ),
+                status="tool_error",
+                summary=_clamp_summary(not_found_message),
             )
         else:
-            tool_result = MCPToolResult(success=True, data=data)
+            tool_result = MCPToolResult(
+                success=True,
+                data=data,
+                status="ok",
+                summary=_derive_summary(data, "Tool data retrieved successfully."),
+            )
     except Exception as exc:
         logger.error("get_tool_data failed: %s", exc)
         tool_result = MCPToolResult(
             success=False,
             error=MCPError(code="INTERNAL_ERROR", message=str(exc)),
+            status="tool_error",
+            summary=_clamp_summary(str(exc)),
         )
 
     return JSONRPCResponse(
