@@ -76,6 +76,11 @@ class ConvilynClient:
 
     Reads ``CONVILYN_API_KEY`` and ``CONVILYN_PLATFORM_URL`` from the
     environment if not provided explicitly.
+
+    Every public method on this client is an async coroutine and MUST be
+    awaited (run under ``asyncio.run(...)`` from sync code). Calling one
+    without ``await`` returns an un-awaited coroutine object — the request
+    is silently never sent.
     """
 
     def __init__(
@@ -157,6 +162,15 @@ class ConvilynClient:
         company: str | None = None,
     ) -> dict[str, Any]:
         """Register a new developer account (no auth needed).
+
+        This is an async coroutine and must be awaited. A bare
+        ``ConvilynClient().register(...)`` call from sync code returns an
+        un-awaited coroutine and never performs the request::
+
+            result = await ConvilynClient().register(
+                email="you@example.com", name="Your Name"
+            )
+            # from sync code: asyncio.run(ConvilynClient().register(...))
 
         Returns:
             Dict with developer_id, api_key, and status.

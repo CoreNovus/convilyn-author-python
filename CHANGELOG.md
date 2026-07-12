@@ -5,8 +5,19 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.2.0b2] — 2026-07-12
+
 ### Docs
 
+- **`register()` (and every client method) is an async coroutine — the
+  docstrings now say so.** A bare `ConvilynClient().register(...)` from sync
+  code returns an un-awaited coroutine and silently never sends the request;
+  the `ConvilynClient` class docstring and the `register()` docstring now
+  spell out the `await` / `asyncio.run(...)` requirement with an example.
+  (Reported by an SDK user during the 2026-07-12 registration-outage
+  investigation — the outage itself was a platform-side infrastructure gap,
+  not an SDK defect; no calling-code change is needed once the platform
+  answers 201.)
 - **QUICKSTART now starts at the actual step 0**: minting a `cvl_` developer
   key via `ConvilynClient().register(...)` (the consumer `ck_` key does not
   work on the author track, and there is no console UI for developer
