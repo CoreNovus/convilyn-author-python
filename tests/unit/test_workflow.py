@@ -4,6 +4,9 @@ import json
 import tempfile
 from pathlib import Path
 
+import pydantic
+import pytest
+
 from convilyn_sdk import ToolServer, WorkflowSpec
 
 
@@ -324,6 +327,23 @@ class TestCompile:
         compiled = WorkflowSpec("x", name="X").use_tools("s:t").use_servers("s").compile()
         assert "mcp_config" in compiled
         assert compiled["mcp_config"]["tools"] == ["s:t"]
+
+    def test_compile_accepts_name_at_max_length(self):
+        compiled = WorkflowSpec("x", name="x" * 80).compile()
+        assert len(compiled["name"]) == 80
+
+    def test_compile_rejects_name_over_max_length(self):
+        with pytest.raises(pydantic.ValidationError):
+            WorkflowSpec("x", name="x" * 81).compile()
+
+    def test_use_tools_accepts_max_tool_count(self):
+        spec = WorkflowSpec("x", name="X").use_tools(*[f"s:t{i}" for i in range(20)])
+        compiled = spec.compile()
+        assert len(compiled["mcp_config"]["tools"]) == 20
+
+    def test_use_tools_rejects_tool_count_over_max(self):
+        with pytest.raises(pydantic.ValidationError):
+            WorkflowSpec("x", name="X").use_tools(*[f"s:t{i}" for i in range(21)])
 
     def test_compile_full_workflow(self):
         server = _make_server()

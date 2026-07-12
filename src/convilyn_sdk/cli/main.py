@@ -314,7 +314,9 @@ def deploy(server_file: str, workflow_file: str, hosted: bool, region: str) -> N
     try:
         result = asyncio.run(_deploy())
     except ConvilynClientError as e:
-        if e.status_code == 501:
+        # 503 = HOSTED_NOT_AVAILABLE on current platform builds; 501 kept
+        # for older builds (TS CLI applies the same pairing).
+        if e.status_code in (501, 503):
             click.echo(
                 f"Error: hosted runtime not yet available on this platform "
                 f"({e.detail}). Use `convilyn-author push --endpoint-url ...` "

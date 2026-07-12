@@ -5,6 +5,46 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Docs
+
+- **QUICKSTART now starts at the actual step 0**: minting a `cvl_` developer
+  key via `ConvilynClient().register(...)` (the consumer `ck_` key does not
+  work on the author track, and there is no console UI for developer
+  registration yet). Also documents the server-less submission path for
+  authors who cannot host a public endpoint.
+- **Hosted-runtime error status corrected: 503, not 501.** Current platform
+  builds answer `503 HOSTED_NOT_AVAILABLE` (older builds used 501;
+  router-unmounted environments answer 404). `deploy --hosted`'s CLI hint now
+  matches both codes (TS parity), and the `deploy_hosted_runtime` docstring
+  and DEPLOYMENT.md no longer claim 501.
+
+## [2.2.0b1] — 2026-07-11
+
+### Added
+
+- **Server-less workflow submission.** `submit_workflow(workflow_spec)` no
+  longer requires `server_ids` — omit it (or pass an empty sequence) when
+  your spec orchestrates only platform built-in tools (OCR / document
+  parsing / analysis), the same shape every built-in goal-lane workflow
+  uses. No self-hosted HMAC tool server is needed for that class of
+  workflow, which unblocks edge/NAT authors who cannot expose a public
+  endpoint. The platform still enforces the `dev_{prefix}.` spec namespace
+  and warns on tool references it cannot resolve.
+
+## [2.1.1b5] — 2026-07-10
+
+### Fixed
+
+- **`WorkflowSpec` name/tool-count bounds are now actually enforced.**
+  2.1.1b4 added the check to the standalone `validate_workflow_spec()`
+  pre-submission validator, but `WorkflowSpec.compile()` (the path every
+  author and the community re-test actually exercises) never calls that
+  function, so a 200-character name or 30 tool references still compiled
+  successfully. The bound is now a `pydantic.Field` constraint on
+  `WorkflowBlueprint.name` / `MCPConfigModel.tools`, enforced immediately
+  at `use_tools()` / `compile()` time — the same place the TypeScript
+  author SDK enforces it.
+
 ## [2.1.1b4] — 2026-07-10
 
 ### Added

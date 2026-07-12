@@ -129,6 +129,7 @@ class MCPConfigModel(BaseModel):
     )
     tools: list[str] = Field(
         default_factory=list,
+        max_length=20,
         description='Tool references in "server:tool" format',
     )
 
@@ -182,7 +183,7 @@ class WorkflowBlueprint(BaseModel):
 
     spec_id: str
     version: str
-    name: str
+    name: str = Field(max_length=80)
     description: str | None = None
     description_i18n: dict[str, str] | None = None
 

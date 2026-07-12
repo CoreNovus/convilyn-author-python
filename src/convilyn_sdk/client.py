@@ -22,6 +22,7 @@ Usage::
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 import httpx
@@ -225,13 +226,16 @@ class ConvilynClient:
     async def submit_workflow(
         self,
         workflow_spec: dict[str, Any],
-        server_ids: list[str],
+        server_ids: Sequence[str] = (),
     ) -> dict[str, Any]:
         """Submit a workflow spec for validation and registration.
 
         Args:
             workflow_spec: Compiled workflow spec dict (from WorkflowSpec.compile()).
-            server_ids: List of server_ids whose tools this workflow uses.
+            server_ids: server_ids whose tools this workflow uses. Omit (or
+                pass an empty sequence) for a "server-less" spec that
+                orchestrates only platform built-in tools — no self-hosted
+                tool server required.
 
         Returns:
             Dict with workflow_id, spec_id, and status.
@@ -239,7 +243,7 @@ class ConvilynClient:
         return await self._request(
             "POST",
             "/developers/workflows",
-            json={"workflow_spec": workflow_spec, "server_ids": server_ids},
+            json={"workflow_spec": workflow_spec, "server_ids": list(server_ids)},
         )
 
     async def list_workflows(self) -> list[dict[str, Any]]:
@@ -299,8 +303,10 @@ class ConvilynClient:
         Raises:
             ConvilynClientError: backend failure. Backend code
                 ``HOSTED_NOT_AVAILABLE`` surfaces as a plain
-                ``ConvilynClientError`` with status 501 — callers can
-                catch it and fall back to ``submit_server`` + BYO
+                ``ConvilynClientError`` with status **503** (older
+                platform builds answered 501; environments where the
+                author-runtime router is unmounted answer 404) — callers
+                can catch it and fall back to ``submit_server`` + BYO
                 ``--endpoint-url`` if their CI needs a hard guarantee.
         """
         payload: dict[str, Any] = {

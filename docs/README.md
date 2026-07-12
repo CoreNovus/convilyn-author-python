@@ -16,11 +16,45 @@ Build tool servers + workflow specs for the Convilyn AI workflow platform.
 
 ## Quick Start
 
+### Step 0 — get a developer key (`cvl_`)
+
+The author track authenticates with a **developer** key (`cvl_` prefix) —
+your consumer key (`ck_`, from the web console) will NOT work here. Mint
+one by registering as a developer; there is no console UI for this yet:
+
+```python
+import asyncio
+from convilyn_sdk import ConvilynClient
+
+async def main() -> None:
+    result = await ConvilynClient().register(
+        email="you@example.com",
+        name="Your Name",
+        company="Optional Co.",
+    )
+    print(result["api_key"])   # cvl_… — shown ONCE, store it securely
+
+asyncio.run(main())
+```
+
+Export it as `CONVILYN_DEVELOPER_KEY` (see Environment Variables below).
+A 503 `REGISTRATION_STORE_UNAVAILABLE` response means the platform side
+is temporarily unavailable — retry later; it is not a problem with your
+request.
+
+### Step 1 — scaffold a tool server
+
 ```bash
 pip install convilyn-author
 convilyn-author init my-server
 cd my-server
 ```
+
+> **No public server?** If your workflow only orchestrates platform
+> built-in tools (OCR, document parsing, analysis), you can skip the
+> tool-server track entirely and submit the workflow spec server-less:
+> `await client.submit_workflow(spec)` — no `server_ids`, no HMAC
+> endpoint. See `submit_workflow` in `client.py`.
 
 Edit `server.py`:
 

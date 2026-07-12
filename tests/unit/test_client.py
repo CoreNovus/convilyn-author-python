@@ -297,6 +297,16 @@ class TestAPIMethods:
         assert result["workflow_id"] == "wf_1"
 
     @pytest.mark.asyncio
+    async def test_submit_workflow_serverless_default(self):
+        """C3: server_ids may be omitted — a spec built on platform tools
+        needs no self-hosted server; the wire body carries an empty list."""
+        client = ConvilynClient(api_key="cvl_test", base_url="http://test")
+        client._request = AsyncMock(return_value={"workflow_id": "wf_1"})
+        await client.submit_workflow({"spec_id": "x"})
+        body = client._request.call_args.kwargs["json"]
+        assert body["server_ids"] == []
+
+    @pytest.mark.asyncio
     async def test_list_workflows(self):
         client = ConvilynClient(api_key="cvl_test", base_url="http://test")
         client._request = AsyncMock(return_value=[{"workflow_id": "wf_1"}])

@@ -247,6 +247,11 @@ to self-host:
 convilyn-author deploy --hosted --region us-east-1   # preview
 ```
 
-This currently returns `501 HOSTED_NOT_AVAILABLE` in most accounts. The
+This currently returns `HOSTED_NOT_AVAILABLE` in most accounts (HTTP
+503 on current platform builds; older builds answered 501, and
+environments with the author-runtime router unmounted answer 404). The
 self-hosted targets above (Lambda / Fargate / VM), registered with
-`convilyn-author push`, are the supported paths for the beta.
+`convilyn-author push`, are the supported paths for the beta. If you
+cannot expose a public endpoint at all (edge device behind NAT) and
+your workflow only needs platform built-in tools, submit it server-less
+instead — see `submit_workflow` (no `server_ids`, no HMAC endpoint).
