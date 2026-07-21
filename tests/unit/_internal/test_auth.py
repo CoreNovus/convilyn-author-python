@@ -18,17 +18,17 @@ from typing import Any
 
 import pytest
 
-from convilyn_sdk._internal.auth import (
+from convilyn_author._internal.auth import (
     InvalidSignatureError,
     verify_signature,
 )
-from convilyn_sdk._internal.server_runtime import (
+from convilyn_author._internal.server_runtime import (
     ConvilynStartupError,
     _create_asgi_app,
     start_server,
 )
-from convilyn_sdk.config import SDKConfig
-from convilyn_sdk.server import ToolServer
+from convilyn_author.config import SDKConfig
+from convilyn_author.server import ToolServer
 
 # ── Helpers ──────────────────────────────────────────────────────────
 

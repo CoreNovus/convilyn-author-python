@@ -7,7 +7,7 @@ from pathlib import Path
 import pydantic
 import pytest
 
-from convilyn_sdk import ToolServer, WorkflowSpec
+from convilyn_author import ToolServer, WorkflowSpec
 
 
 def _make_server():

@@ -12,14 +12,14 @@ from typing import Any
 
 import pytest
 
-from convilyn_sdk._internal.server_runtime import (
+from convilyn_author._internal.server_runtime import (
     _create_asgi_app,
     _read_body,
 )
-from convilyn_sdk.cli.main import _load_server_from_file
-from convilyn_sdk.cli.scaffold import scaffold_project
-from convilyn_sdk.config import SDKConfig
-from convilyn_sdk.server import ToolServer
+from convilyn_author.cli.main import _load_server_from_file
+from convilyn_author.cli.scaffold import scaffold_project
+from convilyn_author.config import SDKConfig
+from convilyn_author.server import ToolServer
 
 # ── Helpers ──────────────────────────────────────────────────────────
 
@@ -101,7 +101,8 @@ class TestFileLoadingSecurity:
         outside_dir.mkdir()
         server_file = outside_dir / "server.py"
         server_file.write_text(
-            'from convilyn_sdk import ToolServer\nserver = ToolServer(name="t", description="t")\n'
+            "from convilyn_author import ToolServer\n"
+            'server = ToolServer(name="t", description="t")\n'
         )
 
         cwd = tmp_path / "project"
@@ -150,7 +151,7 @@ class TestFileLoadingSecurity:
         monkeypatch.chdir(tmp_path)
         server_file = tmp_path / "server.py"
         server_file.write_text(
-            "from convilyn_sdk import ToolServer\n"
+            "from convilyn_author import ToolServer\n"
             'server = ToolServer(name="ok", description="ok")\n'
             '@server.tool(description="t")\n'
             "async def t(x: str) -> dict:\n"
@@ -166,7 +167,7 @@ class TestFileLoadingSecurity:
         sub.mkdir()
         server_file = sub / "app.py"
         server_file.write_text(
-            "from convilyn_sdk import ToolServer\n"
+            "from convilyn_author import ToolServer\n"
             'server = ToolServer(name="sub", description="sub")\n'
             '@server.tool(description="t")\n'
             "async def t(x: str) -> dict:\n"
@@ -586,7 +587,7 @@ class TestStartServerFailClosed:
         monkeypatch.delenv("CONVILYN_ENVIRONMENT", raising=False)
 
     def test_raises_without_secret_or_optin(self, monkeypatch):
-        from convilyn_sdk._internal import server_runtime
+        from convilyn_author._internal import server_runtime
 
         called = {"ran": False}
         monkeypatch.setattr(
@@ -597,7 +598,7 @@ class TestStartServerFailClosed:
         assert called["ran"] is False
 
     def test_env_optin_allows_boot(self, monkeypatch):
-        from convilyn_sdk._internal import server_runtime
+        from convilyn_author._internal import server_runtime
 
         monkeypatch.setenv("CONVILYN_DEV_INSECURE", "1")
         ran = {"ok": False}
@@ -608,7 +609,7 @@ class TestStartServerFailClosed:
         assert ran["ok"] is True
 
     def test_dev_flag_allows_boot(self, monkeypatch):
-        from convilyn_sdk._internal import server_runtime
+        from convilyn_author._internal import server_runtime
 
         ran = {"ok": False}
         monkeypatch.setattr(
@@ -618,7 +619,7 @@ class TestStartServerFailClosed:
         assert ran["ok"] is True
 
     def test_secret_allows_boot(self, monkeypatch):
-        from convilyn_sdk._internal import server_runtime
+        from convilyn_author._internal import server_runtime
 
         monkeypatch.setenv("CONVILYN_HMAC_SECRET", "shh")  # pragma: allowlist secret
         ran = {"ok": False}
@@ -642,7 +643,7 @@ class TestStartServerFailClosed:
         ],
     )
     def test_dev_insecure_env_parsing(self, monkeypatch, val, expected):
-        from convilyn_sdk._internal.server_runtime import _dev_insecure_requested
+        from convilyn_author._internal.server_runtime import _dev_insecure_requested
 
         monkeypatch.setenv("CONVILYN_DEV_INSECURE", val)
         assert _dev_insecure_requested() is expected

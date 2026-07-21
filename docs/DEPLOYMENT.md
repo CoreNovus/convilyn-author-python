@@ -34,7 +34,8 @@ Every inbound request from Convilyn carries three headers:
 The SDK verifies all three automatically when `CONVILYN_HMAC_SECRET` is
 set (see env vars below).
 
-**Verification is fail-closed.** Any server started without
+**Verification is fail-closed: the server refuses requests it cannot
+verify.** Any server started without
 `CONVILYN_HMAC_SECRET` **refuses to boot** (`ConvilynStartupError`) and
 rejects `/mcp` with `401` — regardless of `CONVILYN_ENVIRONMENT` or the
 bind host. **You must set the secret on every deployment.** Insecure local
@@ -78,7 +79,7 @@ COPY server.py ./
 
 # Lambda's Python runtime expects a handler module:func — the SDK ships
 # an ASGI adapter that routes Lambda events to the uvicorn app.
-CMD ["convilyn_sdk._internal.server_runtime.lambda_handler"]
+CMD ["convilyn_author._internal.server_runtime.lambda_handler"]
 ```
 
 ### 4.2 Deploy

@@ -5,18 +5,18 @@ import json
 import pytest
 from click.testing import CliRunner
 
-from convilyn_sdk.cli.main import (
+from convilyn_author.cli.main import (
     _load_server_from_file,
     _load_workflow_from_file,
     cli,
 )
-from convilyn_sdk.cli.scaffold import scaffold_project
+from convilyn_author.cli.scaffold import scaffold_project
 
 # ── Helpers ────────────────────────────────────────────────────────
 
 
 _SERVER_SOURCE_OK = (
-    "from convilyn_sdk import ToolServer\n"
+    "from convilyn_author import ToolServer\n"
     'server = ToolServer(name="t", description="t", version="0.1.0")\n'
     '@server.tool(description="ping")\n'
     "async def ping() -> dict:\n"
@@ -25,7 +25,7 @@ _SERVER_SOURCE_OK = (
 
 
 _WORKFLOW_SOURCE_OK = (
-    "from convilyn_sdk import WorkflowSpec\n"
+    "from convilyn_author import WorkflowSpec\n"
     "workflow = (\n"
     '    WorkflowSpec("demo", name="Demo")\n'
     '    .with_input(types=["document"], formats=["pdf"])\n'
@@ -84,7 +84,7 @@ class TestCLISynth:
         monkeypatch.chdir(tmp_path)
         server_file = tmp_path / "server.py"
         server_file.write_text(
-            "from convilyn_sdk import ToolServer\n"
+            "from convilyn_author import ToolServer\n"
             'server = ToolServer(name="t", description="t", version="0.1.0")\n'
             '@server.tool(description="test")\n'
             "async def test_tool(x: str) -> dict:\n"
@@ -116,7 +116,7 @@ class TestCLITest:
         monkeypatch.chdir(tmp_path)
         server_file = tmp_path / "server.py"
         server_file.write_text(
-            "from convilyn_sdk import ToolServer\n"
+            "from convilyn_author import ToolServer\n"
             'server = ToolServer(name="t", description="t", version="0.1.0")\n'
             '@server.tool(description="ping")\n'
             "async def ping() -> dict:\n"
@@ -216,7 +216,7 @@ class TestCLIDev:
             recorded["port"] = port
             recorded["dev"] = dev
 
-        from convilyn_sdk.server import ToolServer
+        from convilyn_author.server import ToolServer
 
         monkeypatch.setattr(ToolServer, "run", fake_run)
         result = runner.invoke(
@@ -338,7 +338,7 @@ class TestCLIPush:
         _write_workflow(tmp_path)
         # Patch the ConvilynClient symbol at the import site inside push().
         monkeypatch.setattr(
-            "convilyn_sdk.client.ConvilynClient",
+            "convilyn_author.client.ConvilynClient",
             _FakeAsyncClient,
         )
         runner = CliRunner()
@@ -365,7 +365,7 @@ class TestCLIStatus:
     def test_status_lists_servers_and_workflows(self, monkeypatch):
         # logic: ``status`` prints both server + workflow rows
         monkeypatch.setattr(
-            "convilyn_sdk.client.ConvilynClient",
+            "convilyn_author.client.ConvilynClient",
             _FakeAsyncClient,
         )
         runner = CliRunner()
@@ -384,7 +384,7 @@ class TestCLIStatus:
                 return []
 
         monkeypatch.setattr(
-            "convilyn_sdk.client.ConvilynClient",
+            "convilyn_author.client.ConvilynClient",
             _Empty,
         )
         runner = CliRunner()
@@ -394,14 +394,14 @@ class TestCLIStatus:
 
     def test_status_handles_client_error(self, monkeypatch):
         # error: ConvilynClientError surfaces a non-zero exit + error message
-        from convilyn_sdk.client import ConvilynClientError
+        from convilyn_author.client import ConvilynClientError
 
         class _Failing(_FakeAsyncClient):
             async def list_servers(self) -> list[dict]:
                 raise ConvilynClientError(status_code=500, detail="boom")
 
         monkeypatch.setattr(
-            "convilyn_sdk.client.ConvilynClient",
+            "convilyn_author.client.ConvilynClient",
             _Failing,
         )
         runner = CliRunner()
@@ -426,7 +426,7 @@ class TestCLIDoctorBranches:
             return original_import_module(name, *args, **kwargs)
 
         monkeypatch.setattr(
-            "convilyn_sdk.cli.main.importlib.import_module",
+            "convilyn_author.cli.main.importlib.import_module",
             fake_import_module,
         )
         runner = CliRunner()
@@ -445,7 +445,7 @@ class TestCLIDoctorBranches:
             return original_import_module(name, *args, **kwargs)
 
         monkeypatch.setattr(
-            "convilyn_sdk.cli.main.importlib.import_module",
+            "convilyn_author.cli.main.importlib.import_module",
             fake_import_module,
         )
         runner = CliRunner()
@@ -500,14 +500,14 @@ class TestCLITestFailureExit:
         # A server with a tool whose signature breaks JSON-Schema derivation
         # (positional-only kwargs are unsupported by the schema builder).
         (tmp_path / "server.py").write_text(
-            "from convilyn_sdk import ToolServer\n"
+            "from convilyn_author import ToolServer\n"
             'server = ToolServer(name="t", description="t", version="0.1.0")\n',
             encoding="utf-8",
         )
         # Force the runner to report a failing check by patching
         # ConvilynTestRunner.run_compliance_check on the imported module.
-        from convilyn_sdk.testing import runner as runner_mod
-        from convilyn_sdk.types import ComplianceReport, ComplianceResult
+        from convilyn_author.testing import runner as runner_mod
+        from convilyn_author.types import ComplianceReport, ComplianceResult
 
         async def failing_check(self):  # type: ignore[no-untyped-def]
             return ComplianceReport(

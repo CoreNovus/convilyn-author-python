@@ -12,13 +12,13 @@ from unittest.mock import AsyncMock, patch
 
 from click.testing import CliRunner
 
-from convilyn_sdk.cli.main import cli
-from convilyn_sdk.client import ConvilynClientError
+from convilyn_author.cli.main import cli
+from convilyn_author.client import ConvilynClientError
 
 
 def _write_server(path) -> None:
     path.write_text(
-        "from convilyn_sdk import ToolServer\n"
+        "from convilyn_author import ToolServer\n"
         'server = ToolServer(name="demo", description="d", version="0.1.0")\n'
         '@server.tool(description="ping")\n'
         "async def ping() -> dict:\n"
@@ -28,7 +28,7 @@ def _write_server(path) -> None:
 
 def _write_workflow(path) -> None:
     path.write_text(
-        "from convilyn_sdk import WorkflowSpec\n"
+        "from convilyn_author import WorkflowSpec\n"
         "workflow = (\n"
         '    WorkflowSpec("wf_demo", name="Demo", version="1.0.0")\n'
         '    .use_tools("demo:ping").use_servers("demo")\n'
@@ -46,7 +46,7 @@ class TestDeployLogic:
         _write_server(tmp_path / "server.py")
 
         runner = CliRunner()
-        with patch("convilyn_sdk.client.ConvilynClient") as MockClient:
+        with patch("convilyn_author.client.ConvilynClient") as MockClient:
             instance = MockClient.return_value
             instance.deploy_hosted_runtime = AsyncMock(
                 return_value={
@@ -74,7 +74,7 @@ class TestDeployLogic:
         _write_workflow(tmp_path / "workflow.py")
 
         runner = CliRunner()
-        with patch("convilyn_sdk.client.ConvilynClient") as MockClient:
+        with patch("convilyn_author.client.ConvilynClient") as MockClient:
             instance = MockClient.return_value
             instance.deploy_hosted_runtime = AsyncMock(
                 return_value={
@@ -112,7 +112,7 @@ class TestDeployBoundary:
         _write_server(tmp_path / "server.py")
 
         runner = CliRunner()
-        with patch("convilyn_sdk.client.ConvilynClient") as MockClient:
+        with patch("convilyn_author.client.ConvilynClient") as MockClient:
             instance = MockClient.return_value
             instance.deploy_hosted_runtime = AsyncMock(
                 return_value={"runtime_id": "x", "endpoint_url": "y", "status": "z"}
@@ -132,7 +132,7 @@ class TestDeployError:
         _write_server(tmp_path / "server.py")
 
         runner = CliRunner()
-        with patch("convilyn_sdk.client.ConvilynClient") as MockClient:
+        with patch("convilyn_author.client.ConvilynClient") as MockClient:
             instance = MockClient.return_value
             instance.deploy_hosted_runtime = AsyncMock(
                 side_effect=ConvilynClientError(
@@ -149,7 +149,7 @@ class TestDeployError:
         _write_server(tmp_path / "server.py")
 
         runner = CliRunner()
-        with patch("convilyn_sdk.client.ConvilynClient") as MockClient:
+        with patch("convilyn_author.client.ConvilynClient") as MockClient:
             instance = MockClient.return_value
             instance.deploy_hosted_runtime = AsyncMock(side_effect=ConvilynClientError(500, "boom"))
             result = runner.invoke(cli, ["deploy", "--hosted"])
@@ -164,7 +164,7 @@ class TestDeployError:
 class TestRollbackCli:
     def test_rollback_success(self) -> None:
         runner = CliRunner()
-        with patch("convilyn_sdk.client.ConvilynClient") as MockClient:
+        with patch("convilyn_author.client.ConvilynClient") as MockClient:
             instance = MockClient.return_value
             instance.rollback_hosted_runtime = AsyncMock(
                 return_value={"runtime_id": "art_abc", "version": 3, "status": "active"}
@@ -176,7 +176,7 @@ class TestRollbackCli:
 
     def test_rollback_propagates_error(self) -> None:
         runner = CliRunner()
-        with patch("convilyn_sdk.client.ConvilynClient") as MockClient:
+        with patch("convilyn_author.client.ConvilynClient") as MockClient:
             instance = MockClient.return_value
             instance.rollback_hosted_runtime = AsyncMock(
                 side_effect=ConvilynClientError(404, "no such runtime")
@@ -189,7 +189,7 @@ class TestRollbackCli:
 class TestLogsCli:
     def test_logs_prints_entries(self) -> None:
         runner = CliRunner()
-        with patch("convilyn_sdk.client.ConvilynClient") as MockClient:
+        with patch("convilyn_author.client.ConvilynClient") as MockClient:
             instance = MockClient.return_value
             instance.get_hosted_runtime_logs = AsyncMock(
                 return_value=[
@@ -208,7 +208,7 @@ class TestLogsCli:
 
     def test_logs_empty_response(self) -> None:
         runner = CliRunner()
-        with patch("convilyn_sdk.client.ConvilynClient") as MockClient:
+        with patch("convilyn_author.client.ConvilynClient") as MockClient:
             instance = MockClient.return_value
             instance.get_hosted_runtime_logs = AsyncMock(return_value=[])
             result = runner.invoke(cli, ["logs", "art_abc"])

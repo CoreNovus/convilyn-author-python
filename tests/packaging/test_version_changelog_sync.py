@@ -2,7 +2,7 @@
 
 When the next release bumps the version, both files have to change:
 
-1. ``src/convilyn_sdk/_version.py::__version__``  (read by Hatch + runtime)
+1. ``src/convilyn_author/_version.py::__version__``  (read by Hatch + runtime)
 2. ``CHANGELOG.md``                                (the newest H2 heading)
 
 A bump-only-one-file mistake is a silent footgun — the package
@@ -37,7 +37,7 @@ def _read_version_constant() -> str:
     constant to be valid Python AND match the changelog regardless
     of whether deps install cleanly.
     """
-    version_file = Path(__file__).parent.parent.parent / "src" / "convilyn_sdk" / "_version.py"
+    version_file = Path(__file__).parent.parent.parent / "src" / "convilyn_author" / "_version.py"
     match = re.search(
         r'^__version__\s*=\s*["\'](?P<v>[^"\']+)["\']',
         version_file.read_text(encoding="utf-8"),

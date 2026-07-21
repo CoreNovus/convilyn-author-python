@@ -2,7 +2,7 @@
 
 import pytest
 
-from convilyn_sdk import ConvilynServer, ToolServer
+from convilyn_author import ConvilynServer, ToolServer
 
 
 def _make_server():

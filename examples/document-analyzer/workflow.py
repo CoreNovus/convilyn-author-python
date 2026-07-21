@@ -6,7 +6,7 @@ workflow spec that can be tested locally and pushed to the platform.
 
 from server import server
 
-from convilyn_sdk import WorkflowSpec
+from convilyn_author import WorkflowSpec
 
 workflow = (
     WorkflowSpec(

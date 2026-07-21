@@ -1,7 +1,7 @@
 """Tests for workflow_validator — 100% coverage of all validation paths."""
 
-from convilyn_sdk import ToolServer
-from convilyn_sdk.workflow_validator import (
+from convilyn_author import ToolServer
+from convilyn_author.workflow_validator import (
     WorkflowValidationResult,
     validate_tool_coverage,
     validate_workflow_spec,

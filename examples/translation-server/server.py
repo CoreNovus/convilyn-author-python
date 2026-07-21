@@ -4,7 +4,7 @@ Demonstrates wrapping an external API as a platform tool.
 Tools receive data via LLM arguments, not via extraction types.
 """
 
-from convilyn_sdk import ToolServer
+from convilyn_author import ToolServer
 
 server = ToolServer(
     name="document-translator",

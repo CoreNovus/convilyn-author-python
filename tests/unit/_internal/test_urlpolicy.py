@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 import pytest
 
-from convilyn_sdk._internal import urlpolicy
+from convilyn_author._internal import urlpolicy
 
 
 def _addrinfo(*ips: str) -> list[tuple]:

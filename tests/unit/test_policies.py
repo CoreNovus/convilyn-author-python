@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from convilyn_sdk import (
+from convilyn_author import (
     FailureRule,
     FallbackPolicy,
     HumanReviewPolicy,
@@ -24,7 +24,7 @@ from convilyn_sdk import (
     ToolStage,
     WorkflowSpec,
 )
-from convilyn_sdk._internal.policy_translator import (
+from convilyn_author._internal.policy_translator import (
     apply_policies,
     merge_wire_blocks,
 )

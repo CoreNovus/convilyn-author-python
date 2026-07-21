@@ -2,8 +2,8 @@
 
 import pytest
 
-from convilyn_sdk import ToolServer, WorkflowSpec
-from convilyn_sdk.testing.workflow_runner import WorkflowTestResult, WorkflowTestRunner
+from convilyn_author import ToolServer, WorkflowSpec
+from convilyn_author.testing.workflow_runner import WorkflowTestResult, WorkflowTestRunner
 
 
 def _make_server():
@@ -279,8 +279,8 @@ class TestMockRunEdgeCases:
         runner._compiled = compiled
 
         # Bypass validation
-        from convilyn_sdk.testing import workflow_runner as wr_module
-        from convilyn_sdk.workflow_validator import WorkflowValidationResult
+        from convilyn_author.testing import workflow_runner as wr_module
+        from convilyn_author.workflow_validator import WorkflowValidationResult
 
         orig_vws = wr_module.validate_workflow_spec
         orig_vtc = wr_module.validate_tool_coverage
@@ -313,8 +313,8 @@ class TestMockRunEdgeCases:
         server.get_tool = lambda name: None
 
         # Also bypass validation since it passes normally
-        from convilyn_sdk.testing import workflow_runner as wr_module
-        from convilyn_sdk.workflow_validator import WorkflowValidationResult
+        from convilyn_author.testing import workflow_runner as wr_module
+        from convilyn_author.workflow_validator import WorkflowValidationResult
 
         orig_vws = wr_module.validate_workflow_spec
         orig_vtc = wr_module.validate_tool_coverage
@@ -360,12 +360,12 @@ class TestMockRunEdgeCases:
         runner._compiled = compiled
 
         # Monkey-patch validate_workflow_spec and validate_tool_coverage to pass
-        from convilyn_sdk.testing import workflow_runner as wr_module
+        from convilyn_author.testing import workflow_runner as wr_module
 
         orig_vws = wr_module.validate_workflow_spec
         orig_vtc = wr_module.validate_tool_coverage
 
-        from convilyn_sdk.workflow_validator import WorkflowValidationResult
+        from convilyn_author.workflow_validator import WorkflowValidationResult
 
         wr_module.validate_workflow_spec = lambda s: WorkflowValidationResult()
         wr_module.validate_tool_coverage = lambda s, servers: WorkflowValidationResult()

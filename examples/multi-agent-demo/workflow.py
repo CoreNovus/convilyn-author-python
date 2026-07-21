@@ -18,15 +18,15 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from convilyn_sdk import RoleConfig, WorkflowSpec
-from convilyn_sdk.workflow_types import SlotConfig
+from convilyn_author import RoleConfig, WorkflowSpec
+from convilyn_author.workflow_types import SlotConfig
 
 
 @dataclass(frozen=True)
 class AgentRole:
     """Authoring-time handle for a single role in a multi-role workflow.
 
-    Conforms to :class:`convilyn_sdk.AgentRole` Protocol via duck
+    Conforms to :class:`convilyn_author.AgentRole` Protocol via duck
     typing — ``role`` (str) and ``tool_allowlist`` (list[str] | None).
     The SDK's ``with_multi_role`` auto-populates the per-role tool
     allowlist when the object supplies one (the DIP payoff).

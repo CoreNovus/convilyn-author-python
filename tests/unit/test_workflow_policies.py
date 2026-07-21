@@ -13,12 +13,12 @@ import warnings
 import pytest
 from pydantic import ValidationError
 
-from convilyn_sdk import WorkflowSpec
+from convilyn_author import WorkflowSpec
 
 # The granular ``*Config`` wire models are the advanced, non-SemVer surface;
-# since the 2.0.0 major they live under ``convilyn_sdk.workflow_policies`` rather
+# since the 2.0.0 major they live under ``convilyn_author.workflow_policies`` rather
 # than at the package root (see docs/STABILITY.md + tests/contract).
-from convilyn_sdk.workflow_policies import (
+from convilyn_author.workflow_policies import (
     FallbackPolicyConfig,
     GoalCriteriaConfig,
     QaPolicyConfig,
@@ -27,7 +27,7 @@ from convilyn_sdk.workflow_policies import (
     SlotPolicyConfig,
     TaskPolicyConfig,
 )
-from convilyn_sdk.workflow_validator import validate_workflow_spec
+from convilyn_author.workflow_validator import validate_workflow_spec
 
 
 def _make_spec() -> WorkflowSpec:
@@ -219,7 +219,7 @@ class TestQaPolicyBoundary:
             )
 
     def test_structural_check_negative_count_rejected(self) -> None:
-        from convilyn_sdk.workflow_policies import StructuralCheckConfig
+        from convilyn_author.workflow_policies import StructuralCheckConfig
 
         with pytest.raises(ValidationError):
             StructuralCheckConfig(type="min_paragraphs", count=-1)

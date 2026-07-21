@@ -5,6 +5,67 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.2.0b6] - 2026-07-21
+
+### Changed
+
+- Install and development instructions are now uv-first across the README, guides, examples, and CLI hints (pip remains a documented alternative). No API change; the author CLI's next-step hints now print uv commands.
+
+## [2.2.0b5] - 2026-07-21
+
+### Changed
+
+- Documentation polish across the public surface: docstrings, guides, examples, and this changelog now use plain product language throughout (internal shorthand and tracker references removed). No API or behaviour change.
+
+### Added
+
+- **`WorkflowSpec.with_dynamic_slots(enabled=True)`** — opt a workflow into
+  runtime **dynamic slots**. By default a compiled workflow only
+  lets the platform request the inputs the author statically pre-enumerates
+  (`add_slot` / `with_resume_boundary`); calling this sets
+  `agent_config.allow_dynamic_slots = True` on the compiled blueprint, allowing
+  the platform to *additionally* issue slots it computes at execution time (e.g.
+  a companion file it only discovers it needs mid-run) rather than being limited
+  to the pre-declared set. **Opt-in and default-OFF**: an un-opted-in workflow
+  serializes byte-identically to before (no `allow_dynamic_slots` key), so
+  existing authored workflows are unchanged. The round-trip needs no
+  consumer-side change — when the platform issues a dynamic slot the consumer
+  SDK's `wait()` surfaces it via `slots_pending` exactly as it already does for
+  static slots. Composes with `with_agent_config` in either order (the opt-in is
+  preserved across an `with_agent_config` call); pass `enabled=False` to turn a
+  prior opt-in back off.
+
+## [2.2.0b4] — 2026-07-21
+
+### Changed
+
+- **Import name renamed: `convilyn_sdk` → `convilyn_author`** (the PyPI
+  distribution stays `convilyn-author`; `pip install convilyn-author` is
+  unchanged). The old import name was a legacy of the pre-split SDK and read
+  as if it were the consumer package; the import now matches the
+  distribution. **`import convilyn_sdk` keeps working** through a
+  compatibility alias shim that emits one `DeprecationWarning` and resolves
+  every `convilyn_sdk.<submodule>` to the identical `convilyn_author`
+  module object (isinstance/module-state safe).
+
+### Deprecated
+
+- The `convilyn_sdk` import alias. Removal schedule: ships through every
+  remaining 2.x release, removed in the next MAJOR (3.0.0). Migrate with a
+  project-wide `s/convilyn_sdk/convilyn_author/`.
+
+## [2.2.0b3] — 2026-07-13
+
+### Added
+
+- **`client.list_platform_tools()`** — discover the platform's built-in MCP
+  tools (vision / OCR / LLM / …) and their call names from an author (`cvl_`)
+  key. Returns `{"items": [...], "servers": [...]}` (same catalog the Builder
+  UI sees), so you can author a **server-less** `WorkflowSpec` — one that
+  orchestrates only platform-provided tools — without guessing tool names.
+  Previously the catalog was only reachable on the consumer/console auth
+  surface, invisible to `cvl_` developer keys.
+
 ## [2.2.0b2] — 2026-07-12
 
 ### Docs
@@ -26,7 +87,7 @@ versioning follows [Semantic Versioning](https://semver.org/).
 - **Hosted-runtime error status corrected: 503, not 501.** Current platform
   builds answer `503 HOSTED_NOT_AVAILABLE` (older builds used 501;
   router-unmounted environments answer 404). `deploy --hosted`'s CLI hint now
-  matches both codes (TS parity), and the `deploy_hosted_runtime` docstring
+  matches both error codes, and the `deploy_hosted_runtime` docstring
   and DEPLOYMENT.md no longer claim 501.
 
 ## [2.2.0b1] — 2026-07-11
@@ -62,7 +123,7 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 - **Confirmation-handshake tokens**: `mint_confirmation_token` /
   `verify_confirmation_token` / `ConfirmationInvalidError` /
-  `CONFIRMATION_TTL_SECONDS`, now exported from `convilyn_sdk`. Previously
+  `CONFIRMATION_TTL_SECONDS`, now exported from `convilyn_author`. Previously
   only the TypeScript author SDK implemented this despite the docs claiming
   Python compatibility — the wire format was always byte-for-byte compatible
   by specification, but the Python package didn't expose a function to use
@@ -70,7 +131,7 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
-- **`import convilyn_sdk` no longer crashes on Python 3.10.**
+- **`import convilyn_author` no longer crashes on Python 3.10.**
   `_internal/templates.py` used `from datetime import UTC` (Python 3.11+);
   now uses `datetime.timezone.utc`, which has always been available. (Not
   previously caught by testing because nothing exercised template
@@ -80,7 +141,7 @@ versioning follows [Semantic Versioning](https://semver.org/).
   compiled successfully in Python could still be rejected downstream by a
   TS-side or platform check applying the documented limit.
 - **Tool-call JSON-RPC responses now carry `summary`/`status` fields**,
-  matching the TypeScript author SDK's richer wire envelope
+  matching the TypeScript author SDK's richer response format
   (`tool-result-wire.ts`). Additive — the existing `success` / `data` /
   `error` / `execution_time_ms` fields are unchanged.
 - Corrected the README/PyPI dependency description: `convilyn-author` wraps
@@ -188,8 +249,8 @@ this release on — it evolves additively only; see
 - **Deprecated public surface dropped at the package root** —
   the back-compat names kept for one release during the `1.x` rename pass are
   gone in this major:
-  - `Specialist` (top-level alias) and the `convilyn_sdk.specialist` import
-    path → use `AgentRole` (`convilyn_sdk.agent_role`).
+  - `Specialist` (top-level alias) and the `convilyn_author.specialist` import
+    path → use `AgentRole` (`convilyn_author.agent_role`).
   - `SpecialistConfigModel` / `MultiAgentConfig` aliases → use `RoleConfig` /
     `MultiRoleConfig`.
   - `WorkflowSpec.with_multi_agent` / `with_checkpoint` methods → use
@@ -200,8 +261,8 @@ this release on — it evolves additively only; see
     `SlotPolicyConfig`, `StructuralCheckConfig`, `TaskPolicyConfig`,
     `TerminalFailurePolicyConfig`, `ToolStageConfig`, `FailureRuleConfig`) are
     no longer re-exported at the package root. Prefer the five high-level knobs
-    in `convilyn_sdk.policies`; the typed granular models stay importable from
-    `convilyn_sdk.workflow_policies` (advanced, non-SemVer surface) for the
+    in `convilyn_author.policies`; the typed granular models stay importable from
+    `convilyn_author.workflow_policies` (advanced, non-SemVer surface) for the
     granular `with_task_policy` / `with_routing` / `with_qa_policy` builders.
 - Retired the `docs/STABILITY.md` deprecation register now that its whole
   cohort has been removed.
@@ -209,13 +270,13 @@ this release on — it evolves additively only; see
 ### Added
 
 - **Public-API contract test** (`tests/contract/test_public_surface.py`) —
-  freezes `convilyn_sdk.__all__`, the core abstractions' contract methods
+  freezes `convilyn_author.__all__`, the core abstractions' contract methods
   (`ToolServer` / `WorkflowSpec` / `ConvilynManifest` / `ToolCatalog`), and the
-  `convilyn-author` CLI command tree, and fails if any `convilyn_sdk._internal`
+  `convilyn-author` CLI command tree, and fails if any `convilyn_author._internal`
   symbol leaks into the public namespace or the surface grows implicitly. The
   keystone guard behind the SemVer promise; see `docs/STABILITY.md`.
 - **`docs/STABILITY.md`** — the published stability & versioning policy: what the
-  public surface is (`convilyn_sdk.__all__` + the `convilyn-author` CLI + the
+  public surface is (`convilyn_author.__all__` + the `convilyn-author` CLI + the
   HMAC/manifest wire shapes), the SemVer table, the `_internal` exemption, and a
   **deprecation register**.
 - **`convilyn-author template {list,install,fork}`** — Git-workflow
@@ -267,9 +328,9 @@ this release on — it evolves additively only; see
 ### Changed
 
 - Renamed authoring Protocol `Specialist` → `AgentRole`; new canonical
-  module path is `convilyn_sdk.agent_role`. The old `Specialist` name
+  module path is `convilyn_author.agent_role`. The old `Specialist` name
   remains as a back-compat alias at the package root, and
-  `convilyn_sdk.specialist` keeps re-exporting it with a
+  `convilyn_author.specialist` keeps re-exporting it with a
   `DeprecationWarning`.
 - Renamed builder methods: `WorkflowSpec.with_multi_agent(...)` →
   `with_multi_role(...)`, `WorkflowSpec.with_checkpoint(...)` →
@@ -280,8 +341,8 @@ this release on — it evolves additively only; see
   `SpecialistConfigModel` → `RoleConfig`. The old names remain as
   silent back-compat aliases.
 - Internal layout: the thirteen granular policy config models have
-  moved to `convilyn_sdk._internal.legacy_policies`; they stay importable
-  under their original names from `convilyn_sdk.workflow_policies` (the
+  moved to `convilyn_author._internal.legacy_policies`; they stay importable
+  under their original names from `convilyn_author.workflow_policies` (the
   advanced, non-SemVer surface). New code should prefer the high-level knobs.
 - `ToolServer.run()` gained a keyword-only `dev: bool = False`
   parameter (backward-compatible) that opts into insecure local
@@ -290,12 +351,12 @@ this release on — it evolves additively only; see
 ### Fixed
 
 - Relocated the package directory under `sdk/author-python/` (alongside the
-  other SDKs under `sdk/`) for naming parity with `sdk/consumer-python`.
+  other SDKs under `sdk/`) to match the consumer package's naming.
   Updated all path references (publish
   workflow, dependabot, blackbox-lint scan roots, `[project.urls]`, docs links,
   `.gitignore`). The PyPI package name (`convilyn-author`) and import name
-  (`convilyn_sdk`) are unchanged.
-- Expanded the `convilyn_sdk` package docstring to show an accurate `ToolServer`
+  (`convilyn_author`) are unchanged.
+- Expanded the `convilyn_author` package docstring to show an accurate `ToolServer`
   + `WorkflowSpec` quickstart and name the public-API stability contract.
 - `convilyn-author init` / `workflow init` next-step hints now reference the
   `convilyn-author` binary (they still printed the removed legacy `convilyn`
@@ -386,7 +447,7 @@ this release on — it evolves additively only; see
   one-time deprecation banner on stderr on first invocation in a
   process. Silence with `CONVILYN_AUTHOR_BANNER_SHOWN=1`. Scheduled for
   removal in v2.0.0.
-- **Version source-of-truth**: now lives in `src/convilyn_sdk/_version.py`
+- **Version source-of-truth**: now lives in `src/convilyn_author/_version.py`
   (read by both pyproject metadata and the runtime `__version__`
   attribute). Previously drifted between hardcoded constants in two
   places.

@@ -24,7 +24,7 @@ sdk/author-python/                       # PyPI: convilyn-author
 │   ├── README.md                 # PyPI landing page
 │   └── DEPLOYMENT.md             # Lambda / Fargate / VM walkthroughs + HMAC contract
 ├── examples/                     # runnable example tool servers + workflows
-├── src/convilyn_sdk/
+├── src/convilyn_author/
 │   ├── __init__.py               # public surface — only re-exports
 │   ├── _version.py               # single source of truth for __version__
 │   ├── server.py                 # ToolServer — the @server.tool decorator
@@ -52,8 +52,8 @@ sdk/author-python/                       # PyPI: convilyn-author
 
 ## Public surface contract
 
-Anything reachable as `from convilyn_sdk import X` is public and
-follows semver. Treat `convilyn_sdk._internal.*` as private — agents
+Anything reachable as `from convilyn_author import X` is public and
+follows semver. Treat `convilyn_author._internal.*` as private — agents
 can read it, but should not import from it in new tool servers or
 examples.
 
@@ -85,7 +85,7 @@ These are the extension points. Use them; do not duplicate them.
    `WorkflowSpec` (immutable builder — see existing `_clone()`).
 5. Thread the field through `compile()` AND `_from_dict()` so
    round-trip works (`WorkflowSpec.load(path).compile() == compiled`).
-6. Re-export new symbols from `convilyn_sdk/__init__.py`.
+6. Re-export new symbols from `convilyn_author/__init__.py`.
 7. Add 4-category tests (logic / boundary / error / object-state)
    in a new `tests/test_workflow_<feature>.py`.
 8. Add a runnable example under `examples/<name>/workflow.py`.
@@ -131,7 +131,7 @@ These are the extension points. Use them; do not duplicate them.
 
 ## Forbidden / discouraged patterns
 
-- Importing from `convilyn_sdk._internal` outside `_internal` and `cli/`.
+- Importing from `convilyn_author._internal` outside `_internal` and `cli/`.
 - Re-implementing HMAC verification — `_internal/auth.py::verify_signature`
   is the single source of truth.
 - Adding fluent methods that bypass the `_clone()` immutability pattern.

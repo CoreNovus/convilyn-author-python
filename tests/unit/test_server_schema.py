@@ -1,4 +1,4 @@
-"""Schema-derivation + ToolContext injection tests for ``convilyn_sdk.server``.
+"""Schema-derivation + ToolContext injection tests for ``convilyn_author.server``.
 
 The existing :file:`test_server.py` covers ToolServer's happy-path tool
 registration; this file fills the gaps in:
@@ -35,9 +35,9 @@ from typing import Any, Literal, Optional, Union
 import pytest
 from pydantic import BaseModel
 
-from convilyn_sdk.context import ToolContext
-from convilyn_sdk.data_store import InMemoryDataStore
-from convilyn_sdk.server import (
+from convilyn_author.context import ToolContext
+from convilyn_author.data_store import InMemoryDataStore
+from convilyn_author.server import (
     ToolServer,
     _annotation_to_json_schema,
     _func_expects_context,
@@ -316,7 +316,7 @@ class TestToolServerCallTool:
 class TestToolServerRun:
     def test_run_delegates_to_internal_runtime(self, monkeypatch) -> None:
         # logic: ToolServer.run forwards host/port to start_server
-        from convilyn_sdk._internal import server_runtime
+        from convilyn_author._internal import server_runtime
 
         captured: dict[str, object] = {}
 

@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from convilyn_sdk.workflow_types import (
+from convilyn_author.workflow_types import (
     AgentConfigModel,
     InputConfig,
     LocalePolicyConfig,

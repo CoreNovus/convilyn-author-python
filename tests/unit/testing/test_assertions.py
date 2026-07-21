@@ -1,4 +1,4 @@
-"""Tests for assertion helpers in ``convilyn_sdk.testing.assertions``.
+"""Tests for assertion helpers in ``convilyn_author.testing.assertions``.
 
 Four categories per the unit-testing skill:
   * logic       — happy paths (success/error/schema valid)
@@ -11,12 +11,12 @@ from __future__ import annotations
 
 import pytest
 
-from convilyn_sdk.testing.assertions import (
+from convilyn_author.testing.assertions import (
     assert_schema_valid,
     assert_tool_error,
     assert_tool_success,
 )
-from convilyn_sdk.types import ToolError, ToolResult
+from convilyn_author.types import ToolError, ToolResult
 
 # ── assert_tool_success ────────────────────────────────────────────
 

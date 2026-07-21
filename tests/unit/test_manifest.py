@@ -2,7 +2,7 @@
 
 import json
 
-from convilyn_sdk import ConvilynManifest, ToolServer
+from convilyn_author import ConvilynManifest, ToolServer
 
 
 def _make_manifest():

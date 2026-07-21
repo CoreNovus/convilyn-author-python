@@ -12,8 +12,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from convilyn_sdk import CheckpointConfig, MultiRoleConfig, RoleConfig
-from convilyn_sdk.workflow_types import SlotConfig
+from convilyn_author import CheckpointConfig, MultiRoleConfig, RoleConfig
+from convilyn_author.workflow_types import SlotConfig
 
 # ── 1. Logic — happy path round-trip ────────────────────────────────
 

@@ -4,7 +4,7 @@ import pytest
 from server import server
 from workflow import workflow
 
-from convilyn_sdk.testing import ConvilynTestRunner, WorkflowTestRunner
+from convilyn_author.testing import ConvilynTestRunner, WorkflowTestRunner
 
 
 @pytest.fixture

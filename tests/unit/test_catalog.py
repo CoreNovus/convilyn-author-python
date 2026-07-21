@@ -1,4 +1,4 @@
-"""Tests for ``convilyn_sdk.catalog``.
+"""Tests for ``convilyn_author.catalog``.
 
 Four categories per the unit-testing skill:
   * logic       — list / describe / search happy paths
@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from convilyn_sdk.catalog import ServerInfo, ToolCatalog, ToolInfo
+from convilyn_author.catalog import ServerInfo, ToolCatalog, ToolInfo
 
 
 def _write_catalog(tmp_path: Path, *, servers: list[dict]) -> Path:

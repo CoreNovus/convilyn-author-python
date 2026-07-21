@@ -3,16 +3,16 @@
 Keystone guard for the SDK's stability promise (see ``docs/STABILITY.md``). It
 freezes the public surface so any change to it is a *deliberate, reviewed* act:
 
-* ``convilyn_sdk.__all__`` — the exact set of top-level exports.
+* ``convilyn_author.__all__`` — the exact set of top-level exports.
 * The core abstractions (``ToolServer`` / ``WorkflowSpec`` / …) and their
   contract methods.
 * The ``convilyn-author`` CLI command tree.
 * The 2.0.0 removal invariants (issue #1740): the dropped aliases + the 13
   granular ``*Config`` models stay off the top level, and the latter remain
-  reachable from ``convilyn_sdk.workflow_policies``.
+  reachable from ``convilyn_author.workflow_policies``.
 
-…and it asserts that nothing truly-internal from ``convilyn_sdk._internal``
-leaks into the public ``convilyn_sdk`` namespace.
+…and it asserts that nothing truly-internal from ``convilyn_author._internal``
+leaks into the public ``convilyn_author`` namespace.
 
 To change the public API on purpose, update the frozen sets below **and** add a
 ``CHANGELOG.md`` entry in the same commit.
@@ -25,8 +25,8 @@ from pathlib import Path
 
 import pytest
 
-import convilyn_sdk
-from convilyn_sdk.cli.main import cli
+import convilyn_author
+from convilyn_author.cli.main import cli
 
 _SDK_ROOT = Path(__file__).resolve().parents[2]
 
@@ -71,8 +71,8 @@ FROZEN_ALL = {
 }
 
 # Surface removed in the 2.0.0 major (issue #1740). These names MUST NOT be
-# reachable as top-level ``convilyn_sdk.X`` anymore. The 13 granular ``*Config``
-# models keep living one layer down in ``convilyn_sdk.workflow_policies`` (the
+# reachable as top-level ``convilyn_author.X`` anymore. The 13 granular ``*Config``
+# models keep living one layer down in ``convilyn_author.workflow_policies`` (the
 # advanced, non-SemVer surface) — asserted separately below.
 REMOVED_TOP_LEVEL_2_0 = {
     # 13 granular policy models (previously re-exported via workflow_policies)
@@ -114,7 +114,7 @@ RELOCATED_TO_WORKFLOW_POLICIES = {
 }
 
 # Truly-internal symbols (transport / HMAC / JSON-RPC / server runtime /
-# template marketplace). These must NEVER be reachable as ``convilyn_sdk.X``.
+# template marketplace). These must NEVER be reachable as ``convilyn_author.X``.
 INTERNAL_DENYLIST = (
     "verify_signature",
     "InvalidSignatureError",
@@ -175,8 +175,8 @@ TESTING_HELPERS = (
 
 
 def test_all_matches_frozen_set() -> None:
-    """``convilyn_sdk.__all__`` must equal the frozen contract set exactly."""
-    actual = set(convilyn_sdk.__all__)
+    """``convilyn_author.__all__`` must equal the frozen contract set exactly."""
+    actual = set(convilyn_author.__all__)
     assert actual == FROZEN_ALL, (
         "public __all__ drifted — added "
         f"{sorted(actual - FROZEN_ALL)}, removed {sorted(FROZEN_ALL - actual)}. "
@@ -186,7 +186,7 @@ def test_all_matches_frozen_set() -> None:
 
 def test_every_export_is_importable() -> None:
     """Every name in ``__all__`` must resolve (no dangling export)."""
-    missing = [name for name in convilyn_sdk.__all__ if not hasattr(convilyn_sdk, name)]
+    missing = [name for name in convilyn_author.__all__ if not hasattr(convilyn_author, name)]
     assert not missing, f"declared in __all__ but missing: {missing}"
 
 
@@ -194,10 +194,10 @@ def test_no_implicit_public_exports() -> None:
     """No non-underscore, non-module attribute may exist outside ``__all__``."""
     public_attrs = {
         name
-        for name, value in vars(convilyn_sdk).items()
+        for name, value in vars(convilyn_author).items()
         if not name.startswith("_") and not inspect.ismodule(value)
     }
-    extra = public_attrs - set(convilyn_sdk.__all__)
+    extra = public_attrs - set(convilyn_author.__all__)
     assert not extra, f"implicit public exports not in __all__: {sorted(extra)}"
 
 
@@ -205,8 +205,8 @@ def test_no_implicit_public_exports() -> None:
 
 
 def test_internal_symbols_not_reachable_from_top_level() -> None:
-    """Transport / HMAC / JSON-RPC / runtime internals must not be ``convilyn_sdk.X``."""
-    leaked = [name for name in INTERNAL_DENYLIST if hasattr(convilyn_sdk, name)]
+    """Transport / HMAC / JSON-RPC / runtime internals must not be ``convilyn_author.X``."""
+    leaked = [name for name in INTERNAL_DENYLIST if hasattr(convilyn_author, name)]
     assert not leaked, f"internal implementation symbols leaked publicly: {leaked}"
 
 
@@ -216,7 +216,7 @@ def test_internal_symbols_not_reachable_from_top_level() -> None:
 def test_core_abstractions_expose_contract_methods() -> None:
     """ToolServer / WorkflowSpec / ConvilynManifest / ToolCatalog keep their methods."""
     for cls_name, required in REQUIRED_METHODS.items():
-        cls = getattr(convilyn_sdk, cls_name)
+        cls = getattr(convilyn_author, cls_name)
         public = {name for name in dir(cls) if not name.startswith("_")}
         missing = required - public
         assert not missing, f"{cls_name} lost contract methods: {sorted(missing)}"
@@ -224,13 +224,13 @@ def test_core_abstractions_expose_contract_methods() -> None:
 
 def test_tool_server_data_store_is_a_property() -> None:
     """``ToolServer.data_store`` is a read accessor, not a settable attribute."""
-    accessor = inspect.getattr_static(convilyn_sdk.ToolServer, "data_store")
+    accessor = inspect.getattr_static(convilyn_author.ToolServer, "data_store")
     assert isinstance(accessor, property)
 
 
 def test_testing_helpers_are_importable() -> None:
-    """The public author-testing helpers stay reachable under ``convilyn_sdk.testing``."""
-    import convilyn_sdk.testing as testing
+    """The public author-testing helpers stay reachable under ``convilyn_author.testing``."""
+    import convilyn_author.testing as testing
 
     missing = [name for name in TESTING_HELPERS if not hasattr(testing, name)]
     assert not missing, f"testing helpers missing: {missing}"
@@ -250,36 +250,36 @@ def test_cli_command_tree_frozen() -> None:
 
 
 def test_removed_2_0_surface_is_gone_from_top_level() -> None:
-    """The deprecated surface dropped in 2.0.0 must not be reachable as ``convilyn_sdk.X``.
+    """The deprecated surface dropped in 2.0.0 must not be reachable as ``convilyn_author.X``.
 
     Covers the 13 granular ``*Config`` models plus the ``Specialist`` /
     ``SpecialistConfigModel`` / ``MultiAgentConfig`` aliases. Pairs with the
     ``CHANGELOG.md`` "Removed" section for 2.0.0.
     """
-    still_present = sorted(n for n in REMOVED_TOP_LEVEL_2_0 if hasattr(convilyn_sdk, n))
+    still_present = sorted(n for n in REMOVED_TOP_LEVEL_2_0 if hasattr(convilyn_author, n))
     assert not still_present, (
-        f"surface removed in 2.0.0 is still reachable as convilyn_sdk.X: {still_present}"
+        f"surface removed in 2.0.0 is still reachable as convilyn_author.X: {still_present}"
     )
-    leaked_into_all = REMOVED_TOP_LEVEL_2_0 & set(convilyn_sdk.__all__)
+    leaked_into_all = REMOVED_TOP_LEVEL_2_0 & set(convilyn_author.__all__)
     assert not leaked_into_all, f"removed names still in __all__: {sorted(leaked_into_all)}"
 
 
 def test_specialist_module_path_is_removed() -> None:
-    """``import convilyn_sdk.specialist`` must fail after the 2.0.0 removal."""
+    """``import convilyn_author.specialist`` must fail after the 2.0.0 removal."""
     import importlib
 
     with pytest.raises(ModuleNotFoundError):
-        importlib.import_module("convilyn_sdk.specialist")
+        importlib.import_module("convilyn_author.specialist")
 
 
 def test_granular_models_remain_in_workflow_policies_submodule() -> None:
-    """The granular ``*Config`` models keep living under ``convilyn_sdk.workflow_policies``.
+    """The granular ``*Config`` models keep living under ``convilyn_author.workflow_policies``.
 
     The top-level re-export was dropped (above), but the typed wire models stay
     importable one layer down for power users and for the granular builder
     methods (``with_task_policy`` / ``with_routing`` / ``with_qa_policy``).
     """
-    import convilyn_sdk.workflow_policies as wp
+    import convilyn_author.workflow_policies as wp
 
     missing = [n for n in RELOCATED_TO_WORKFLOW_POLICIES if not hasattr(wp, n)]
     assert not missing, f"granular models vanished from workflow_policies: {missing}"
@@ -293,5 +293,5 @@ def test_stability_doc_exists_and_names_the_contract() -> None:
     doc = _SDK_ROOT / "docs" / "STABILITY.md"
     assert doc.exists(), f"missing stability policy doc at {doc}"
     text = doc.read_text(encoding="utf-8")
-    assert "convilyn_sdk.__all__" in text
-    assert "convilyn_sdk._internal" in text
+    assert "convilyn_author.__all__" in text
+    assert "convilyn_author._internal" in text

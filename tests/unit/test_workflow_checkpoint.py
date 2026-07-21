@@ -7,9 +7,9 @@ parity via ``_from_dict``.
 
 from __future__ import annotations
 
-from convilyn_sdk import WorkflowSpec
-from convilyn_sdk.workflow_types import SlotConfig
-from convilyn_sdk.workflow_validator import validate_workflow_spec
+from convilyn_author import WorkflowSpec
+from convilyn_author.workflow_types import SlotConfig
+from convilyn_author.workflow_validator import validate_workflow_spec
 
 
 def _make_spec() -> WorkflowSpec:

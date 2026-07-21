@@ -12,12 +12,12 @@ from dataclasses import dataclass, field
 
 import pytest
 
-from convilyn_sdk import (
+from convilyn_author import (
     AgentRole,
     RoleConfig,
     WorkflowSpec,
 )
-from convilyn_sdk.workflow_validator import validate_workflow_spec
+from convilyn_author.workflow_validator import validate_workflow_spec
 
 # ── Helpers: concrete AgentRole Protocol implementations ──────────
 

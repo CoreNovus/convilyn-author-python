@@ -2,8 +2,8 @@
 
 import pytest
 
-from convilyn_sdk import ToolServer
-from convilyn_sdk.testing import ConvilynTestRunner, assert_tool_error, assert_tool_success
+from convilyn_author import ToolServer
+from convilyn_author.testing import ConvilynTestRunner, assert_tool_error, assert_tool_success
 
 
 def _make_server():

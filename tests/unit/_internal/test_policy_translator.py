@@ -43,17 +43,17 @@ def backend_qa_policy():
 
 class TestTaskPolicyParity:
     def test_clarify_condition_values_match(self, backend_task_policy) -> None:
-        from convilyn_sdk.workflow_policies import ClarifyCondition
+        from convilyn_author.workflow_policies import ClarifyCondition
 
         assert get_args(ClarifyCondition) == get_args(backend_task_policy.ClarifyCondition)
 
     def test_infer_condition_values_match(self, backend_task_policy) -> None:
-        from convilyn_sdk.workflow_policies import InferCondition
+        from convilyn_author.workflow_policies import InferCondition
 
         assert get_args(InferCondition) == get_args(backend_task_policy.InferCondition)
 
     def test_stop_condition_values_match(self, backend_task_policy) -> None:
-        from convilyn_sdk.workflow_policies import StopCondition
+        from convilyn_author.workflow_policies import StopCondition
 
         assert get_args(StopCondition) == get_args(backend_task_policy.StopCondition)
 
@@ -63,7 +63,7 @@ class TestTaskPolicyParity:
 
 class TestRoutingPolicyParity:
     def test_no_tool_result_action_matches(self, backend_routing_policy) -> None:
-        from convilyn_sdk.workflow_policies import NoToolResultAction
+        from convilyn_author.workflow_policies import NoToolResultAction
 
         backend_field = backend_routing_policy.FallbackPolicy.model_fields["no_tool_result"]
         # The Literal is the type annotation of the backend field.
@@ -76,17 +76,17 @@ class TestRoutingPolicyParity:
 
 class TestQaPolicyParity:
     def test_failure_category_values_match(self, backend_qa_policy) -> None:
-        from convilyn_sdk.workflow_policies import FailureCategory
+        from convilyn_author.workflow_policies import FailureCategory
 
         assert get_args(FailureCategory) == get_args(backend_qa_policy.FailureCategory)
 
     def test_slot_type_values_match(self, backend_qa_policy) -> None:
-        from convilyn_sdk.workflow_policies import QaSlotType
+        from convilyn_author.workflow_policies import QaSlotType
 
         assert get_args(QaSlotType) == get_args(backend_qa_policy.SlotType)
 
     def test_first_question_format_matches(self, backend_qa_policy) -> None:
-        from convilyn_sdk.workflow_policies import FirstQuestionFormat
+        from convilyn_author.workflow_policies import FirstQuestionFormat
 
         backend_field = backend_qa_policy.SlotPolicy.model_fields["first_question_format"]
         # Field annotation is `Literal[...] | None`; unwrap the Optional.
@@ -102,13 +102,13 @@ class TestQaPolicyParity:
         assert get_args(FirstQuestionFormat) == get_args(literal_arg)
 
     def test_quality_check_type_matches(self, backend_qa_policy) -> None:
-        from convilyn_sdk.workflow_policies import QualityCheckType
+        from convilyn_author.workflow_policies import QualityCheckType
 
         backend_field = backend_qa_policy.QualityCheck.model_fields["type"]
         assert get_args(QualityCheckType) == get_args(backend_field.annotation)
 
     def test_structural_check_type_matches(self, backend_qa_policy) -> None:
-        from convilyn_sdk.workflow_policies import StructuralCheckType
+        from convilyn_author.workflow_policies import StructuralCheckType
 
         backend_field = backend_qa_policy.StructuralCheck.model_fields["type"]
         assert get_args(StructuralCheckType) == get_args(backend_field.annotation)

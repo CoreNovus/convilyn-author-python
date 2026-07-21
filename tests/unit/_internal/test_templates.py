@@ -14,8 +14,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from convilyn_sdk._internal import templates
-from convilyn_sdk._internal.templates import (
+from convilyn_author._internal import templates
+from convilyn_author._internal.templates import (
     TemplateEntry,
     TemplateError,
     _validate_suffix,
@@ -237,7 +237,7 @@ class TestInstallTemplate:
             }
         )
         with (
-            patch("convilyn_sdk._internal.templates.subprocess.run", return_value=pip_ok) as run,
+            patch("convilyn_author._internal.templates.subprocess.run", return_value=pip_ok) as run,
             patch("httpx.get", return_value=metadata),
         ):
             entry = install_template("blog")
@@ -259,7 +259,7 @@ class TestInstallTemplate:
         pip_fail.returncode = 1
         pip_fail.stdout = ""
         pip_fail.stderr = "No matching distribution"
-        with patch("convilyn_sdk._internal.templates.subprocess.run", return_value=pip_fail):
+        with patch("convilyn_author._internal.templates.subprocess.run", return_value=pip_fail):
             with pytest.raises(TemplateError) as exc_info:
                 install_template("missing")
         assert exc_info.value.code == "PIP_FAILED"
@@ -267,7 +267,7 @@ class TestInstallTemplate:
         assert load_catalog() == []
 
     def test_invalid_suffix_short_circuits(self, catalog_in_tmp) -> None:
-        with patch("convilyn_sdk._internal.templates.subprocess.run") as run:
+        with patch("convilyn_author._internal.templates.subprocess.run") as run:
             with pytest.raises(TemplateError) as exc_info:
                 install_template("../escape")
         assert exc_info.value.code == "INVALID_NAME"
@@ -286,7 +286,7 @@ class TestInstallTemplate:
         pip_ok = MagicMock(returncode=0, stdout="", stderr="")
         metadata = _mock_response(json_payload={"info": {"version": "0.2.0", "project_urls": {}}})
         with (
-            patch("convilyn_sdk._internal.templates.subprocess.run", return_value=pip_ok),
+            patch("convilyn_author._internal.templates.subprocess.run", return_value=pip_ok),
             patch("httpx.get", return_value=metadata),
         ):
             install_template("blog")
@@ -309,7 +309,7 @@ class TestForkTemplate:
         import socket as _socket
 
         addrinfo = [(_socket.AF_INET, _socket.SOCK_STREAM, 6, "", ("140.82.121.4", 0))]
-        with patch("convilyn_sdk._internal.urlpolicy.socket.getaddrinfo", return_value=addrinfo):
+        with patch("convilyn_author._internal.urlpolicy.socket.getaddrinfo", return_value=addrinfo):
             yield
 
     def _metadata_with(self, source: str | None) -> MagicMock:
@@ -340,7 +340,7 @@ class TestForkTemplate:
                 return_value=self._metadata_with("https://github.com/x/blog"),
             ),
             patch(
-                "convilyn_sdk._internal.templates.subprocess.run",
+                "convilyn_author._internal.templates.subprocess.run",
                 side_effect=fake_clone,
             ),
         ):
@@ -390,7 +390,7 @@ class TestForkTemplate:
                 return_value=self._metadata_with("https://github.com/x/blog"),
             ),
             patch(
-                "convilyn_sdk._internal.templates.subprocess.run",
+                "convilyn_author._internal.templates.subprocess.run",
                 return_value=clone_fail,
             ),
         ):
@@ -482,10 +482,10 @@ class TestCloneUrlPolicy:
         with (
             patch("httpx.get", return_value=metadata),
             patch(
-                "convilyn_sdk._internal.urlpolicy.socket.getaddrinfo",
+                "convilyn_author._internal.urlpolicy.socket.getaddrinfo",
                 return_value=private,
             ),
-            patch("convilyn_sdk._internal.templates.subprocess.run") as run_mock,
+            patch("convilyn_author._internal.templates.subprocess.run") as run_mock,
         ):
             with pytest.raises(TemplateError) as exc_info:
                 templates.fork_template("blog", "my-blog", target_dir=tmp_path)

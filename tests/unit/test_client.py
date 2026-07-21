@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from convilyn_sdk import ToolServer, WorkflowSpec
-from convilyn_sdk.client import ConvilynClient, ConvilynClientError
+from convilyn_author import ToolServer, WorkflowSpec
+from convilyn_author.client import ConvilynClient, ConvilynClientError
 
 
 def _make_server():
@@ -60,7 +60,7 @@ class TestClientConstruction:
     def test_env_config(self):
         env = {"CONVILYN_API_KEY": "cvl_env_key"}  # pragma: allowlist secret
         with patch.dict("os.environ", env):
-            from convilyn_sdk.config import SDKConfig
+            from convilyn_author.config import SDKConfig
 
             config = SDKConfig.from_env()
             assert config.api_key == "cvl_env_key"  # pragma: allowlist secret
@@ -124,6 +124,31 @@ class TestHTTPRequests:
 
             result = await client._request("GET", "/test")
             assert result == {"result": "ok"}
+
+    @pytest.mark.asyncio
+    async def test_list_platform_tools_hits_catalog_endpoint(self):
+        client = ConvilynClient(api_key="cvl_test", base_url="http://test")
+        catalog = {
+            "items": [{"toolName": "image-ocr:extract_structured_image", "mcpServer": "image-ocr"}],
+            "servers": [],
+        }
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = catalog
+
+        with patch("httpx.AsyncClient") as MockClient:
+            mock_instance = AsyncMock()
+            mock_instance.request.return_value = mock_response
+            mock_instance.__aenter__ = AsyncMock(return_value=mock_instance)
+            mock_instance.__aexit__ = AsyncMock(return_value=False)
+            MockClient.return_value = mock_instance
+
+            result = await client.list_platform_tools()
+
+        assert result == catalog
+        method, url = mock_instance.request.call_args.args
+        assert method == "GET"
+        assert url.endswith("/developers/tools/catalog")
 
     @pytest.mark.asyncio
     async def test_request_error_with_json_detail(self):

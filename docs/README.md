@@ -24,7 +24,7 @@ one by registering as a developer; there is no console UI for this yet:
 
 ```python
 import asyncio
-from convilyn_sdk import ConvilynClient
+from convilyn_author import ConvilynClient
 
 async def main() -> None:
     result = await ConvilynClient().register(
@@ -59,7 +59,7 @@ cd my-server
 Edit `server.py`:
 
 ```python
-from convilyn_sdk import ConvilynServer
+from convilyn_author import ConvilynServer
 
 server = ConvilynServer(
     name="my-server",
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 ## Testing
 
 ```python
-from convilyn_sdk.testing import ConvilynTestRunner
+from convilyn_author.testing import ConvilynTestRunner
 
 runner = ConvilynTestRunner(server=server)
 result = await runner.call_tool("process", {"text": "hello"})

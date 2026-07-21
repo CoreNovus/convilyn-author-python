@@ -3,7 +3,7 @@
 import pytest
 from server import server
 
-from convilyn_sdk.testing import ConvilynTestRunner, assert_schema_valid, assert_tool_success
+from convilyn_author.testing import ConvilynTestRunner, assert_schema_valid, assert_tool_success
 
 
 @pytest.fixture

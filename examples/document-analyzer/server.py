@@ -4,7 +4,7 @@ Demonstrates a complete workflow project with tools that parse,
 analyze, and summarize documents.
 """
 
-from convilyn_sdk import ToolServer
+from convilyn_author import ToolServer
 
 server = ToolServer(
     name="doc-analyzer",

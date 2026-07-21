@@ -33,13 +33,13 @@ Convilyn Author is for:
 ## Install
 
 ```bash
-pip install convilyn-author
+uv add convilyn-author   # or: pip install convilyn-author
 ```
 
 ## Quickstart
 
 ```bash
-pip install convilyn-author
+uv add convilyn-author   # or: pip install convilyn-author
 convilyn-author init my-server     # scaffold a tool server
 cd my-server                       # edit server.py — add @server.tool functions
 convilyn-author dev                # run locally (no secret needed)

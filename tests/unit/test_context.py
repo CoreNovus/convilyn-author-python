@@ -1,4 +1,4 @@
-"""Tests for ``convilyn_sdk.context``.
+"""Tests for ``convilyn_author.context``.
 
 Four categories per the unit-testing skill:
   * logic       — happy paths (request_id, data_store, progress)
@@ -11,13 +11,13 @@ from __future__ import annotations
 
 import pytest
 
-from convilyn_sdk.context import (
+from convilyn_author.context import (
     ConsoleProgressBackend,
     ProgressBackend,
     ToolContext,
     create_tool_context,
 )
-from convilyn_sdk.data_store import InMemoryDataStore
+from convilyn_author.data_store import InMemoryDataStore
 
 
 class _RecordingBackend:

@@ -17,8 +17,8 @@ If a test here goes red, you are changing the published contract:
 
 from __future__ import annotations
 
-from convilyn_sdk.workflow import WorkflowSpec
-from convilyn_sdk.workflow_types import PUBLIC_SCHEMA_VERSION, WorkflowBlueprint
+from convilyn_author.workflow import WorkflowSpec
+from convilyn_author.workflow_types import PUBLIC_SCHEMA_VERSION, WorkflowBlueprint
 
 # The full public blueprint field set at PUBLIC_SCHEMA_VERSION == "1".
 # snake_case throughout; ``spec_id`` and ``version`` are the identity keys

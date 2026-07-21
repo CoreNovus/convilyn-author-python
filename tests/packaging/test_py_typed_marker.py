@@ -3,7 +3,7 @@
 `pyproject.toml` declares the ``Typing :: Typed`` classifier. Per PEP 561,
 that promise is only honoured when ``py.typed`` ships inside the
 installed package. If the marker is ever removed (e.g. someone deletes
-``src/convilyn_sdk/py.typed`` thinking it's empty cruft), IDEs go back
+``src/convilyn_author/py.typed`` thinking it's empty cruft), IDEs go back
 to silently ignoring the SDK's type hints — and authors have no obvious
 diagnostic.
 
@@ -16,8 +16,8 @@ from pathlib import Path
 
 
 def test_py_typed_marker_present() -> None:
-    """The PEP 561 marker file must exist at ``src/convilyn_sdk/py.typed``."""
-    marker = Path(__file__).parent.parent.parent / "src" / "convilyn_sdk" / "py.typed"
+    """The PEP 561 marker file must exist at ``src/convilyn_author/py.typed``."""
+    marker = Path(__file__).parent.parent.parent / "src" / "convilyn_author" / "py.typed"
     assert marker.exists(), (
         "PEP 561 marker missing — re-create an empty file at "
         f"{marker.relative_to(Path(__file__).parent.parent.parent)} so the "

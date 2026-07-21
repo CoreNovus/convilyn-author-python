@@ -2,9 +2,9 @@
 
 import pytest
 
-from convilyn_sdk import ToolServer
-from convilyn_sdk._internal.models import JSONRPCRequest
-from convilyn_sdk._internal.protocol import _clamp_summary, handle_jsonrpc_request
+from convilyn_author import ToolServer
+from convilyn_author._internal.models import JSONRPCRequest
+from convilyn_author._internal.protocol import _clamp_summary, handle_jsonrpc_request
 
 
 def _make_server():

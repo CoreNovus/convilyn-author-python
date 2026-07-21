@@ -17,7 +17,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from convilyn_sdk.client import ConvilynClient, ConvilynClientError
+from convilyn_author.client import ConvilynClient, ConvilynClientError
 
 # ── 1. Logic — happy-path wire shape ────────────────────────────
 

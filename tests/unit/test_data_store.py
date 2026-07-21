@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from convilyn_sdk.config import SDKConfig
-from convilyn_sdk.data_store import (
+from convilyn_author.config import SDKConfig
+from convilyn_author.data_store import (
     DynamoDataStore,
     InMemoryDataStore,
     _generate_ref_id,

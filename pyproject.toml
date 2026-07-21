@@ -39,14 +39,6 @@ dependencies = [
     "uvicorn>=0.24.0,<1.0.0",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.23.0",
-    "pytest-cov>=4.1.0",
-    "ruff==0.15.6",
-]
-
 [project.urls]
 Homepage = "https://convilyn.corenovus.com"
 Documentation = "https://docs.convilyn.corenovus.com"
@@ -58,13 +50,23 @@ Changelog = "https://github.com/CoreNovus/convilyn-author-python/blob/main/CHANG
 [project.scripts]
 # Author-SDK entry point. The v1.x legacy ``convilyn`` alias was removed in
 # v2.0.0 (the ``convilyn`` binary belongs to the consumer SDK).
-convilyn-author = "convilyn_sdk.cli.main:cli"
+convilyn-author = "convilyn_author.cli.main:cli"
+
+# Dev tooling lives in a PEP 735 dependency group (uv-native: `uv sync`
+# installs it by default). Kept out of the wheel/sdist METADATA.
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff==0.15.6",
+]
 
 [tool.hatch.version]
-path = "src/convilyn_sdk/_version.py"
+path = "src/convilyn_author/_version.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/convilyn_sdk"]
+packages = ["src/convilyn_author", "src/convilyn_sdk"]
 
 [tool.hatch.build.targets.sdist]
 # Ship CHANGELOG + tests + examples + docs in the sdist so
@@ -78,6 +80,7 @@ packages = ["src/convilyn_sdk"]
 # agent-operating instructions, not user-facing documentation, and
 # must not ship to PyPI.
 include = [
+    "src/convilyn_author",
     "src/convilyn_sdk",
     "tests",
     "examples",
@@ -89,6 +92,10 @@ include = [
 exclude = [
     "AGENT.md",
     "docs/internal/*",
+    # Never ship the repo-root `.gitignore` into the public sdist — it leaks
+    # internal repo structure / operator secret-file naming / PII fixture names
+    # and bypasses the blackbox lint (no `.gitignore` scan suffix).
+    ".gitignore",
 ]
 
 [tool.ruff]
@@ -114,18 +121,18 @@ testpaths = ["tests"]
 # [tool.coverage.report]) is also enforced at the pytest level via
 # `--cov-fail-under=80` so a failing run is visible without needing a
 # separate `coverage report` step.
-addopts = "--cov=src/convilyn_sdk --cov-branch --cov-report=term-missing --cov-report=xml --cov-fail-under=80"
+addopts = "--cov=src/convilyn_author --cov-branch --cov-report=term-missing --cov-report=xml --cov-fail-under=80"
 
 [tool.coverage.run]
-source = ["src/convilyn_sdk"]
+source = ["src/convilyn_author"]
 branch = true
 # Omit zero-logic modules so they don't dilute the percentage: the
 # generated `_version.py` only declares __version__; the package
 # `__init__.py` is re-exports only. Both are exercised by every
 # import-based test indirectly.
 omit = [
-    "src/convilyn_sdk/_version.py",
-    "src/convilyn_sdk/__init__.py",
+    "src/convilyn_author/_version.py",
+    "src/convilyn_author/__init__.py",
 ]
 
 [tool.coverage.report]

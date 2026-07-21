@@ -3,7 +3,7 @@
 Demonstrates the ToolServer + DataStore pattern.
 """
 
-from convilyn_sdk import ToolServer
+from convilyn_author import ToolServer
 
 server = ToolServer(
     name="weather-data",

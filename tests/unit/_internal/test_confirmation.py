@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from convilyn_sdk._internal.confirmation import (
+from convilyn_author._internal.confirmation import (
     ConfirmationInvalidError,
     mint_confirmation_token,
     normalize_for_digest,
@@ -106,9 +106,7 @@ class TestVerificationFailures:
             tool_name="t", arguments={"n": 1}, expires_at_unix=4102444800, secret="s"
         )
         with pytest.raises(ConfirmationInvalidError) as exc_info:
-            verify_confirmation_token(
-                tool_name="t", arguments={"n": 2}, token=token, secret="s"
-            )
+            verify_confirmation_token(tool_name="t", arguments={"n": 2}, token=token, secret="s")
         assert exc_info.value.reason == "digest_mismatch"
 
     def test_rejects_a_token_verified_with_the_wrong_secret(self):
@@ -116,16 +114,12 @@ class TestVerificationFailures:
             tool_name="t", arguments={}, expires_at_unix=4102444800, secret="right"
         )
         with pytest.raises(ConfirmationInvalidError) as exc_info:
-            verify_confirmation_token(
-                tool_name="t", arguments={}, token=token, secret="wrong"
-            )
+            verify_confirmation_token(tool_name="t", arguments={}, token=token, secret="wrong")
         assert exc_info.value.reason == "signature_mismatch"
 
     def test_rejects_a_garbage_token(self):
         with pytest.raises(ConfirmationInvalidError) as exc_info:
-            verify_confirmation_token(
-                tool_name="t", arguments={}, token="not-base64!!", secret="s"
-            )
+            verify_confirmation_token(tool_name="t", arguments={}, token="not-base64!!", secret="s")
         assert exc_info.value.reason == "malformed"
 
     def test_mint_rejects_an_empty_secret(self):
