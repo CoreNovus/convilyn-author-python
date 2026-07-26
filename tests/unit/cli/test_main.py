@@ -7,7 +7,6 @@ from click.testing import CliRunner
 
 from convilyn_author.cli.main import (
     _load_server_from_file,
-    _load_workflow_from_file,
     cli,
 )
 from convilyn_author.cli.scaffold import scaffold_project
@@ -24,23 +23,8 @@ _SERVER_SOURCE_OK = (
 )
 
 
-_WORKFLOW_SOURCE_OK = (
-    "from convilyn_author import WorkflowSpec\n"
-    "workflow = (\n"
-    '    WorkflowSpec("demo", name="Demo")\n'
-    '    .with_input(types=["document"], formats=["pdf"])\n'
-    '    .with_output(format="json", additional={"type": "demo_result"})\n'
-    '    .add_phase("Phase1", "Step")\n'
-    ")\n"
-)
-
-
 def _write_server(tmp_path, body: str = _SERVER_SOURCE_OK) -> None:
     (tmp_path / "server.py").write_text(body, encoding="utf-8")
-
-
-def _write_workflow(tmp_path, body: str = _WORKFLOW_SOURCE_OK) -> None:
-    (tmp_path / "workflow.py").write_text(body, encoding="utf-8")
 
 
 class TestScaffold:
@@ -174,32 +158,6 @@ class TestLoadServerFromFile:
             _load_server_from_file("server.py")
 
 
-# ── _load_workflow_from_file error branches ───────────────────────
-
-
-class TestLoadWorkflowFromFile:
-    def test_path_outside_cwd_raises_systemexit(self, tmp_path, monkeypatch):
-        # error: path escape rejected (mirror of the server-loader rule)
-        monkeypatch.chdir(tmp_path)
-        outside = tmp_path.parent / "evil-wf.py"
-        outside.write_text("x = 1", encoding="utf-8")
-        with pytest.raises(SystemExit):
-            _load_workflow_from_file(str(outside))
-
-    def test_missing_file_raises_systemexit(self, tmp_path, monkeypatch):
-        # error: missing workflow file → SystemExit
-        monkeypatch.chdir(tmp_path)
-        with pytest.raises(SystemExit):
-            _load_workflow_from_file("nope.py")
-
-    def test_no_workflow_in_module_raises_systemexit(self, tmp_path, monkeypatch):
-        # error: valid file without a WorkflowSpec instance is rejected
-        monkeypatch.chdir(tmp_path)
-        (tmp_path / "workflow.py").write_text("x = 1\n", encoding="utf-8")
-        with pytest.raises(SystemExit):
-            _load_workflow_from_file("workflow.py")
-
-
 # ── dev command ────────────────────────────────────────────────────
 
 
@@ -228,74 +186,6 @@ class TestCLIDev:
         assert recorded == {"host": "0.0.0.0", "port": 9001, "dev": True}
 
 
-# ── workflow init command ──────────────────────────────────────────
-
-
-class TestCLIWorkflowInit:
-    def test_workflow_init_scaffolds_project(self, tmp_path, monkeypatch):
-        # logic: ``workflow init`` builds a workflow-type scaffold
-        monkeypatch.chdir(tmp_path)
-        runner = CliRunner()
-        result = runner.invoke(cli, ["workflow", "init", "wf-proj"])
-        assert result.exit_code == 0
-        assert "Workflow project created" in result.output
-        # Next-step hints must use the real binary, not the removed `convilyn` alias.
-        assert "convilyn-author workflow build" in result.output
-
-
-# ── workflow build command ─────────────────────────────────────────
-
-
-class TestCLIWorkflowBuild:
-    def test_workflow_build_writes_spec_json(self, tmp_path, monkeypatch):
-        # logic: ``workflow build`` compiles + writes the spec JSON
-        monkeypatch.chdir(tmp_path)
-        _write_workflow(tmp_path)
-        _write_server(tmp_path)
-        runner = CliRunner()
-        output_path = tmp_path / "wf.spec.json"
-        result = runner.invoke(
-            cli,
-            [
-                "workflow",
-                "build",
-                "--file",
-                "workflow.py",
-                "--server-file",
-                "server.py",
-                "--output",
-                str(output_path),
-            ],
-        )
-        assert result.exit_code == 0
-        assert output_path.exists()
-
-    def test_workflow_build_without_server_file_still_compiles(
-        self,
-        tmp_path,
-        monkeypatch,
-    ):
-        # boundary: when server.py is absent, tool-coverage validation is skipped
-        monkeypatch.chdir(tmp_path)
-        _write_workflow(tmp_path)
-        runner = CliRunner()
-        output_path = tmp_path / "wf.spec.json"
-        result = runner.invoke(
-            cli,
-            [
-                "workflow",
-                "build",
-                "--file",
-                "workflow.py",
-                "--server-file",
-                "absent.py",
-                "--output",
-                str(output_path),
-            ],
-        )
-        assert result.exit_code == 0
-
-
 # ── push command ───────────────────────────────────────────────────
 
 
@@ -307,23 +197,19 @@ class _FakeAsyncClient:
     def __init__(self, *_a, **_kw) -> None:
         pass
 
-    async def push(self, *, server, workflow, endpoint_url):  # type: ignore[no-untyped-def]
+    async def push(self, *, server, endpoint_url):  # type: ignore[no-untyped-def]
         type(self).last_push = {
             "server_name": server.name,
             "endpoint_url": endpoint_url,
         }
         return {
             "server_id": "srv-123",
+            "server_name": server.name,
             "server_status": "pending",
-            "workflow_id": "wf-456",
-            "workflow_status": "pending",
         }
 
     async def list_servers(self) -> list[dict]:
         return [{"server_name": "srv-a", "server_id": "id-a", "status": "verified"}]
-
-    async def list_workflows(self) -> list[dict]:
-        return [{"name": "wf-a", "workflow_id": "wid-a", "status": "active"}]
 
 
 class TestCLIPush:
@@ -335,7 +221,6 @@ class TestCLIPush:
         # logic: ``push`` calls ConvilynClient.push and surfaces returned IDs
         monkeypatch.chdir(tmp_path)
         _write_server(tmp_path)
-        _write_workflow(tmp_path)
         # Patch the ConvilynClient symbol at the import site inside push().
         monkeypatch.setattr(
             "convilyn_author.client.ConvilynClient",
@@ -348,8 +233,6 @@ class TestCLIPush:
                 "push",
                 "--server-file",
                 "server.py",
-                "--workflow-file",
-                "workflow.py",
                 "--endpoint-url",
                 "https://example.test",
             ],
@@ -362,8 +245,8 @@ class TestCLIPush:
 
 
 class TestCLIStatus:
-    def test_status_lists_servers_and_workflows(self, monkeypatch):
-        # logic: ``status`` prints both server + workflow rows
+    def test_status_lists_servers(self, monkeypatch):
+        # logic: ``status`` prints server rows (server-only surface)
         monkeypatch.setattr(
             "convilyn_author.client.ConvilynClient",
             _FakeAsyncClient,
@@ -372,15 +255,11 @@ class TestCLIStatus:
         result = runner.invoke(cli, ["status"])
         assert result.exit_code == 0
         assert "srv-a" in result.output
-        assert "wf-a" in result.output
 
     def test_status_handles_empty_response(self, monkeypatch):
-        # boundary: empty lists yield the "No servers / No workflows" messages
+        # boundary: an empty server list yields the "No servers submitted" message
         class _Empty(_FakeAsyncClient):
             async def list_servers(self) -> list[dict]:
-                return []
-
-            async def list_workflows(self) -> list[dict]:
                 return []
 
         monkeypatch.setattr(

@@ -147,97 +147,20 @@ def _run_local_test(server_file: str) -> None:
         raise SystemExit(1)
 
 
-@cli.group()
-def workflow() -> None:
-    """Workflow definition and management commands."""
-
-
-@workflow.command("init")
-@click.argument("name")
-@click.option("--dir", "target_dir", default=None, help="Target directory")
-def workflow_init(name: str, target_dir: str | None) -> None:
-    """Scaffold a new Convilyn workflow project (tools + workflow spec)."""
-    from convilyn_author.cli.scaffold import scaffold_project
-
-    out = scaffold_project(name, Path(target_dir) if target_dir else None, project_type="workflow")
-    click.echo(f"Workflow project created: {out}")
-    click.echo(f"  cd {out.name}")
-    click.echo("  uv add convilyn-author  # or: pip install convilyn-author")
-    click.echo("  # Edit server.py (define tools) and workflow.py (define workflow)")
-    click.echo("  convilyn-author workflow build")
-    click.echo("  convilyn-author test")
-
-
-@workflow.command("build")
-@click.option("--file", "workflow_file", default="workflow.py", help="Workflow definition file")
-@click.option("--server-file", default="server.py", help="Server definition file")
-@click.option("--output", default="workflow.spec.json", help="Output spec path")
-def workflow_build(workflow_file: str, server_file: str, output: str) -> None:
-    """Compile workflow spec and validate tool coverage."""
-    from convilyn_author.workflow_validator import validate_tool_coverage, validate_workflow_spec
-
-    # Load workflow
-    workflow_obj = _load_workflow_from_file(workflow_file)
-
-    # Compile
-    compiled = workflow_obj.compile()
-    click.echo(f"Compiled workflow: {compiled.get('name', '?')} ({compiled.get('spec_id', '?')})")
-
-    # Validate spec structure
-    spec_result = validate_workflow_spec(compiled)
-    for err in spec_result.errors:
-        click.echo(f"  [ERROR] {err}", err=True)
-    for warn in spec_result.warnings:
-        click.echo(f"  [WARN] {warn}")
-
-    if not spec_result.valid:
-        click.echo("Spec validation failed", err=True)
-        raise SystemExit(1)
-
-    # Validate tool coverage if server.py exists
-    server_path = Path(server_file).resolve()
-    if server_path.exists():
-        server = _load_server_from_file(server_file)
-        tool_result = validate_tool_coverage(compiled, [server])
-        for err in tool_result.errors:
-            click.echo(f"  [ERROR] {err}", err=True)
-        for warn in tool_result.warnings:
-            click.echo(f"  [WARN] {warn}")
-        if not tool_result.valid:
-            click.echo("Tool coverage validation failed", err=True)
-            raise SystemExit(1)
-
-    # Save
-    import json
-
-    Path(output).write_text(
-        json.dumps(compiled, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-
-    mcp_tools = compiled.get("mcp_config", {}).get("tools", [])
-    phases = compiled.get("phases", [])
-    click.echo(f"  Tools: {len(mcp_tools)}, Phases: {len(phases)}")
-    click.echo(f"Spec written: {output}")
-
-
 @cli.command()
 @click.option("--server-file", default="server.py", help="Server definition file")
-@click.option("--workflow-file", default="workflow.py", help="Workflow definition file")
 @click.option("--endpoint-url", required=True, help="HTTPS URL where server is deployed")
-def push(server_file: str, workflow_file: str, endpoint_url: str) -> None:
-    """Push tool server and workflow to the Convilyn platform."""
+def push(server_file: str, endpoint_url: str) -> None:
+    """Push a tool server to the Convilyn platform."""
     from convilyn_author.client import ConvilynClient
 
     server = _load_server_from_file(server_file)
-    workflow_obj = _load_workflow_from_file(workflow_file)
 
     client = ConvilynClient()
 
     async def _push() -> dict:
         return await client.push(
             server=server,
-            workflow=workflow_obj,
             endpoint_url=endpoint_url,
         )
 
@@ -246,20 +169,12 @@ def push(server_file: str, workflow_file: str, endpoint_url: str) -> None:
 
     server_id = result.get("server_id", "?")
     server_status = result.get("server_status", "?")
-    workflow_id = result.get("workflow_id", "?")
-    workflow_status = result.get("workflow_status", "?")
     click.echo(f"Server submitted: {server_id} ({server_status})")
-    click.echo(f"Workflow submitted: {workflow_id} ({workflow_status})")
     click.echo("Use 'convilyn-author status' to check verification progress.")
 
 
 @cli.command()
 @click.option("--server-file", default="server.py", help="Server definition file")
-@click.option(
-    "--workflow-file",
-    default="workflow.py",
-    help="Workflow definition file (optional — omit to deploy server only)",
-)
 @click.option(
     "--hosted",
     is_flag=True,
@@ -271,7 +186,7 @@ def push(server_file: str, workflow_file: str, endpoint_url: str) -> None:
     default="us-east-1",
     help="region the hosted runtime is provisioned in",
 )
-def deploy(server_file: str, workflow_file: str, hosted: bool, region: str) -> None:
+def deploy(server_file: str, hosted: bool, region: str) -> None:
     """Deploy a tool server to the Convilyn platform.
 
     With ``--hosted``, Convilyn provisions a sandboxed hosted runtime in its
@@ -298,17 +213,10 @@ def deploy(server_file: str, workflow_file: str, hosted: bool, region: str) -> N
     server = _load_server_from_file(server_file)
     manifest = server.synth().to_dict()
 
-    workflow_spec_dict: dict[str, Any] | None = None
-    if Path(workflow_file).resolve().exists():
-        workflow_obj = _load_workflow_from_file(workflow_file)
-        workflow_spec_dict = workflow_obj.compile()
-
     client = ConvilynClient()
 
     async def _deploy() -> dict[str, Any]:
-        return await client.deploy_hosted_runtime(
-            manifest, region=region, workflow_spec=workflow_spec_dict
-        )
+        return await client.deploy_hosted_runtime(manifest, region=region)
 
     click.echo(f"Deploying to Convilyn-Hosted Runtime in {region}...")
     try:
@@ -332,8 +240,6 @@ def deploy(server_file: str, workflow_file: str, hosted: bool, region: str) -> N
     status = result.get("status", "?")
     click.echo(f"Runtime provisioned: {runtime_id} ({status})")
     click.echo(f"Endpoint URL: {endpoint_url}")
-    if workflow_spec_dict and "workflow_id" in result:
-        click.echo(f"Workflow registered: {result['workflow_id']}")
     click.echo(
         "Use 'convilyn-author logs <runtime_id>' to follow runtime logs, "
         "'convilyn-author rollback <runtime_id>' to revert."
@@ -479,7 +385,7 @@ def template_fork(name: str, new_name: str) -> None:
 
 @cli.command("status")
 def check_status() -> None:
-    """Check submission status of servers and workflows."""
+    """Check submission status of tool servers."""
     from convilyn_author.client import ConvilynClient, ConvilynClientError
 
     client = ConvilynClient()
@@ -496,59 +402,11 @@ def check_status() -> None:
                     )
             else:
                 click.echo("No servers submitted.")
-
-            workflows = await client.list_workflows()
-            if workflows:
-                click.echo("Workflows:")
-                for wf in workflows:
-                    click.echo(
-                        f"  {wf.get('name', wf.get('spec_id', '?'))} "
-                        f"({wf.get('workflow_id', '?')}) — {wf.get('status', '?')}"
-                    )
-            else:
-                click.echo("No workflows submitted.")
         except ConvilynClientError as e:
             click.echo(f"Error: {e.detail}", err=True)
             raise SystemExit(1)
 
     asyncio.run(_status())
-
-
-def _load_workflow_from_file(path: str = "workflow.py") -> Any:
-    """Dynamically load a WorkflowSpec from a Python file."""
-    file_path = Path(path).resolve()
-
-    cwd = Path.cwd().resolve()
-    try:
-        file_path.relative_to(cwd)
-    except ValueError:
-        click.echo(
-            f"Error: {path} is outside the current working directory.",
-            err=True,
-        )
-        raise SystemExit(1)
-
-    if not file_path.exists():
-        click.echo(f"Error: {path} not found", err=True)
-        raise SystemExit(1)
-
-    spec = importlib.util.spec_from_file_location("_user_workflow", str(file_path))
-    if spec is None or spec.loader is None:
-        click.echo(f"Error: Cannot load {path}", err=True)
-        raise SystemExit(1)
-
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    from convilyn_author.workflow import WorkflowSpec
-
-    for attr_name in dir(module):
-        attr = getattr(module, attr_name)
-        if isinstance(attr, WorkflowSpec):
-            return attr
-
-    click.echo(f"Error: No WorkflowSpec instance found in {path}", err=True)
-    raise SystemExit(1)
 
 
 @cli.command()

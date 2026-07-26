@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/CoreNovus/convilyn-author-python/actions/workflows/ci.yml/badge.svg)](https://github.com/CoreNovus/convilyn-author-python/actions/workflows/ci.yml)
 
-Official Convilyn author SDK — build and host tool servers, author workflow specs, and create reusable AI workflow components for the Convilyn AI platform.
+Official Convilyn author SDK — build and host the tool servers that power the Convilyn AI platform's workflows.
 
 Convilyn Author helps builders turn tools, services, and repeated processes into reusable workflow building blocks. It is part of the CoreNovus vision for practical AI workflows across cloud services, local machines, AI PCs, edge devices, and future IoT environments.
 
@@ -16,9 +16,9 @@ Convilyn Author helps builders turn tools, services, and repeated processes into
 
 ## What is Convilyn Author?
 
-Convilyn Author is an open source Python SDK for creating tool servers and workflow specs for Convilyn.
+Convilyn Author is an open source Python SDK for creating tool servers for Convilyn. (Workflows themselves are authored in the Convilyn chat Builder; this SDK builds the MCP tool servers those workflows call.)
 
-It helps developers expose useful capabilities as reusable tools, run them locally during development, and host them on their own infrastructure. This makes it easier for the community to build, share, and maintain workflow components that others can use.
+It helps developers expose useful capabilities as reusable tools, run them locally during development, and host them on their own infrastructure. This makes it easier for the community to build, share, and maintain tool servers that others can use.
 
 ## Who is this for?
 
@@ -57,7 +57,7 @@ See **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** for the HMAC contract + billing
 
 Convilyn Author is maintained by CoreNovus, an independent developer team building open source tools for reusable AI workflows.
 
-We welcome contributions from people who want to help improve documentation, examples, tests, local development experience, tool server patterns, workflow specs, and deployment guidance.
+We welcome contributions from people who want to help improve documentation, examples, tests, local development experience, tool server patterns, and deployment guidance.
 
 A useful workflow component should not stay locked inside one project. It should become something others can learn from, adapt, host, and reuse in their own context.
 
@@ -72,7 +72,7 @@ Start here:
 
 CoreNovus is building toward a world where AI workflows can move beyond one-time chat sessions.
 
-Convilyn Author focuses on the authoring side: tool servers, workflow specs, and reusable workflow components. Together with the Convilyn client SDK, it helps make workflows easier to create, save, run, share, and eventually bring across cloud, local, and real-world environments.
+Convilyn Author focuses on the tool-server side: the reusable capabilities that platform workflows call. Together with the Convilyn client SDK, it helps make workflows easier to create, save, run, share, and eventually bring across cloud, local, and real-world environments.
 
 ## Contributing
 

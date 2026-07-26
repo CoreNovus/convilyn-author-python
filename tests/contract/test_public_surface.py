@@ -4,12 +4,11 @@ Keystone guard for the SDK's stability promise (see ``docs/STABILITY.md``). It
 freezes the public surface so any change to it is a *deliberate, reviewed* act:
 
 * ``convilyn_author.__all__`` — the exact set of top-level exports.
-* The core abstractions (``ToolServer`` / ``WorkflowSpec`` / …) and their
+* The core abstractions (``ToolServer`` / ``ConvilynManifest`` / …) and their
   contract methods.
 * The ``convilyn-author`` CLI command tree.
 * The 2.0.0 removal invariants (issue #1740): the dropped aliases + the 13
-  granular ``*Config`` models stay off the top level, and the latter remain
-  reachable from ``convilyn_author.workflow_policies``.
+  granular ``*Config`` models stay off the top level.
 
 …and it asserts that nothing truly-internal from ``convilyn_author._internal``
 leaks into the public ``convilyn_author`` namespace.
@@ -33,9 +32,9 @@ _SDK_ROOT = Path(__file__).resolve().parents[2]
 # ── Frozen public export set ─────────────────────────────────────────
 # Changing this set IS the act of changing the public API. Pair any edit
 # with a CHANGELOG.md entry + a SemVer bump (see docs/STABILITY.md).
+# This is the tool-server-only surface (release 2.3.0b1): workflow
+# authoring was removed and lives in the Convilyn chat Builder.
 FROZEN_ALL = {
-    "AgentRole",
-    "CheckpointConfig",
     "ComplianceReport",
     "ComplianceResult",
     "CONFIRMATION_TTL_SECONDS",
@@ -43,20 +42,8 @@ FROZEN_ALL = {
     "ConvilynClient",
     "ConvilynManifest",
     "ConvilynServer",
-    "FailureRule",
-    "FallbackPolicy",
-    "HumanReviewPolicy",
     "InMemoryDataStore",
     "mint_confirmation_token",
-    "MultiRoleConfig",
-    "OutputValidationPolicy",
-    "PatternCheck",
-    "RequiredSection",
-    "RetryPolicy",
-    "RoleConfig",
-    "StructureCheck",
-    "TerminalFailureRule",
-    "TimeoutPolicy",
     "ToolCatalog",
     "ToolContext",
     "ToolDataRef",
@@ -64,18 +51,16 @@ FROZEN_ALL = {
     "ToolResult",
     "ToolServer",
     "ToolSpec",
-    "ToolStage",
     "verify_confirmation_token",
-    "WorkflowSpec",
     "__version__",
 }
 
 # Surface removed in the 2.0.0 major (issue #1740). These names MUST NOT be
-# reachable as top-level ``convilyn_author.X`` anymore. The 13 granular ``*Config``
-# models keep living one layer down in ``convilyn_author.workflow_policies`` (the
-# advanced, non-SemVer surface) — asserted separately below.
+# reachable as top-level ``convilyn_author.X`` anymore. The 13 granular
+# ``*Config`` models and the deprecated aliases were dropped from the top level;
+# the workflow-authoring surface that once hosted them is fully removed.
 REMOVED_TOP_LEVEL_2_0 = {
-    # 13 granular policy models (previously re-exported via workflow_policies)
+    # 13 granular policy models (previously re-exported)
     "FailureRuleConfig",
     "FallbackPolicyConfig",
     "GoalCriteriaConfig",
@@ -95,24 +80,6 @@ REMOVED_TOP_LEVEL_2_0 = {
     "MultiAgentConfig",
 }
 
-# The 13 granular models stay importable from this submodule after the top-level
-# re-export was dropped — power-user access to the typed wire shapes.
-RELOCATED_TO_WORKFLOW_POLICIES = {
-    "FailureRuleConfig",
-    "FallbackPolicyConfig",
-    "GoalCriteriaConfig",
-    "QaPolicyConfig",
-    "QualityCheckConfig",
-    "RetryPolicyConfig",
-    "RoutingPolicyConfig",
-    "SectionConfig",
-    "SlotPolicyConfig",
-    "StructuralCheckConfig",
-    "TaskPolicyConfig",
-    "TerminalFailurePolicyConfig",
-    "ToolStageConfig",
-}
-
 # Truly-internal symbols (transport / HMAC / JSON-RPC / server runtime /
 # template marketplace). These must NEVER be reachable as ``convilyn_author.X``.
 INTERNAL_DENYLIST = (
@@ -123,9 +90,6 @@ INTERNAL_DENYLIST = (
     "JSONRPCRequest",
     "JSONRPCResponse",
     "ToolContextPayload",
-    "PolicyProtocol",
-    "merge_wire_blocks",
-    "apply_policies",
     "parse_jsonrpc_request",
     "start_server",
     "ConvilynStartupError",
@@ -138,7 +102,6 @@ INTERNAL_DENYLIST = (
 # so adding a method stays backward-compatible while removal/rename fails).
 REQUIRED_METHODS = {
     "ToolServer": {"tool", "synth", "run", "call_tool", "tool_names", "get_tool"},
-    "WorkflowSpec": {"compile", "save", "load"},
     "ConvilynManifest": {"to_dict", "to_json", "save", "load"},
     "ToolCatalog": {"list_servers", "list_tools", "describe", "search"},
 }
@@ -149,7 +112,6 @@ CLI_TOP = {
     "synth",
     "dev",
     "test",
-    "workflow",
     "push",
     "deploy",
     "rollback",
@@ -158,13 +120,10 @@ CLI_TOP = {
     "status",
     "doctor",
 }
-CLI_WORKFLOW = {"init", "build"}
 CLI_TEMPLATE = {"list", "install", "fork"}
 
 TESTING_HELPERS = (
     "ConvilynTestRunner",
-    "WorkflowTestRunner",
-    "WorkflowTestResult",
     "assert_tool_success",
     "assert_tool_error",
     "assert_schema_valid",
@@ -214,7 +173,7 @@ def test_internal_symbols_not_reachable_from_top_level() -> None:
 
 
 def test_core_abstractions_expose_contract_methods() -> None:
-    """ToolServer / WorkflowSpec / ConvilynManifest / ToolCatalog keep their methods."""
+    """ToolServer / ConvilynManifest / ToolCatalog keep their contract methods."""
     for cls_name, required in REQUIRED_METHODS.items():
         cls = getattr(convilyn_author, cls_name)
         public = {name for name in dir(cls) if not name.startswith("_")}
@@ -242,7 +201,6 @@ def test_testing_helpers_are_importable() -> None:
 def test_cli_command_tree_frozen() -> None:
     """The ``convilyn-author`` command tree (top + subgroups) is frozen."""
     assert set(cli.commands) == CLI_TOP, sorted(cli.commands)
-    assert set(cli.commands["workflow"].commands) == CLI_WORKFLOW
     assert set(cli.commands["template"].commands) == CLI_TEMPLATE
 
 
@@ -270,19 +228,6 @@ def test_specialist_module_path_is_removed() -> None:
 
     with pytest.raises(ModuleNotFoundError):
         importlib.import_module("convilyn_author.specialist")
-
-
-def test_granular_models_remain_in_workflow_policies_submodule() -> None:
-    """The granular ``*Config`` models keep living under ``convilyn_author.workflow_policies``.
-
-    The top-level re-export was dropped (above), but the typed wire models stay
-    importable one layer down for power users and for the granular builder
-    methods (``with_task_policy`` / ``with_routing`` / ``with_qa_policy``).
-    """
-    import convilyn_author.workflow_policies as wp
-
-    missing = [n for n in RELOCATED_TO_WORKFLOW_POLICIES if not hasattr(wp, n)]
-    assert not missing, f"granular models vanished from workflow_policies: {missing}"
 
 
 # ── Stability doc anchor ─────────────────────────────────────────────

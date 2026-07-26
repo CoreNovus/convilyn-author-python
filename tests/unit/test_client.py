@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from convilyn_author import ToolServer, WorkflowSpec
+from convilyn_author import ToolServer
 from convilyn_author.client import ConvilynClient, ConvilynClientError
 
 
@@ -16,15 +16,6 @@ def _make_server():
         return {"ok": True}
 
     return server
-
-
-def _make_workflow():
-    return (
-        WorkflowSpec("test_wf", name="Test", version="1.0.0")
-        .use_tools("srv:t1")
-        .use_servers("srv")
-        .add_phase("P", "D")
-    )
 
 
 # ── Construction ────────────────────────────────────────────────
@@ -314,66 +305,6 @@ class TestAPIMethods:
         result = await client.deactivate_server("srv_1")
         assert result["status"] == "suspended"
 
-    @pytest.mark.asyncio
-    async def test_submit_workflow(self):
-        client = ConvilynClient(api_key="cvl_test", base_url="http://test")
-        client._request = AsyncMock(return_value={"workflow_id": "wf_1"})
-        result = await client.submit_workflow({"spec_id": "x"}, ["srv_1"])
-        assert result["workflow_id"] == "wf_1"
-
-    @pytest.mark.asyncio
-    async def test_submit_workflow_serverless_default(self):
-        """C3: server_ids may be omitted — a spec built on platform tools
-        needs no self-hosted server; the wire body carries an empty list."""
-        client = ConvilynClient(api_key="cvl_test", base_url="http://test")
-        client._request = AsyncMock(return_value={"workflow_id": "wf_1"})
-        await client.submit_workflow({"spec_id": "x"})
-        body = client._request.call_args.kwargs["json"]
-        assert body["server_ids"] == []
-
-    @pytest.mark.asyncio
-    async def test_list_workflows(self):
-        client = ConvilynClient(api_key="cvl_test", base_url="http://test")
-        client._request = AsyncMock(return_value=[{"workflow_id": "wf_1"}])
-        result = await client.list_workflows()
-        assert len(result) == 1
-
-    @pytest.mark.asyncio
-    async def test_list_workflows_wraps_non_list(self):
-        client = ConvilynClient(api_key="cvl_test", base_url="http://test")
-        client._request = AsyncMock(return_value={"workflow_id": "wf_1"})
-        result = await client.list_workflows()
-        assert isinstance(result, list)
-
-    @pytest.mark.asyncio
-    async def test_get_workflow_status(self):
-        client = ConvilynClient(api_key="cvl_test", base_url="http://test")
-        client._request = AsyncMock(return_value={"status": "active"})
-        result = await client.get_workflow_status("wf_1")
-        assert result["status"] == "active"
-
-    @pytest.mark.asyncio
-    async def test_test_workflow(self):
-        client = ConvilynClient(api_key="cvl_test", base_url="http://test")
-        client._request = AsyncMock(return_value={"all_passed": True})
-        result = await client.test_workflow("wf_1")
-        assert result["all_passed"] is True
-
-    @pytest.mark.asyncio
-    async def test_test_workflow_with_input(self):
-        client = ConvilynClient(api_key="cvl_test", base_url="http://test")
-        client._request = AsyncMock(return_value={"all_passed": True})
-        await client.test_workflow("wf_1", test_input={"files": ["f.pdf"]})
-        call_args = client._request.call_args
-        assert call_args[1]["json"]["test_input"]["files"] == ["f.pdf"]
-
-    @pytest.mark.asyncio
-    async def test_deactivate_workflow(self):
-        client = ConvilynClient(api_key="cvl_test", base_url="http://test")
-        client._request = AsyncMock(return_value={"status": "suspended"})
-        result = await client.deactivate_workflow("wf_1")
-        assert result["status"] == "suspended"
-
 
 # ── Push Orchestration ──────────────────────────────────────────
 
@@ -381,6 +312,7 @@ class TestAPIMethods:
 class TestPush:
     @pytest.mark.asyncio
     async def test_push_success(self):
+        # push is server-only: synth manifest → submit_server → return ids.
         client = ConvilynClient(api_key="cvl_test", base_url="http://test")
         client.submit_server = AsyncMock(
             return_value={
@@ -389,28 +321,17 @@ class TestPush:
                 "status": "submitted",
             }
         )
-        client.submit_workflow = AsyncMock(
-            return_value={
-                "workflow_id": "wf_1",
-                "spec_id": "test_wf",
-                "status": "submitted",
-            }
-        )
 
         server = _make_server()
-        workflow = _make_workflow()
 
-        result = await client.push(server, workflow, "https://my.server.com")
+        result = await client.push(server, "https://my.server.com")
 
         assert result["server_id"] == "srv_1"
-        assert result["workflow_id"] == "wf_1"
+        assert result["server_name"] == "srv"
         assert result["server_status"] == "submitted"
-        assert result["workflow_status"] == "submitted"
 
-        # Verify submit_server called with manifest
+        # Verify submit_server called with manifest + endpoint URL
         manifest_arg = client.submit_server.call_args[0][0]
         assert manifest_arg["server"]["name"] == "srv"
-
-        # Verify submit_workflow called with compiled spec
-        spec_arg = client.submit_workflow.call_args[0][0]
-        assert spec_arg["spec_id"] == "test_wf"
+        endpoint_arg = client.submit_server.call_args[0][1]
+        assert endpoint_arg == "https://my.server.com"

@@ -5,6 +5,27 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.3.0b1] - 2026-07-26
+
+### Removed (breaking)
+
+- **The workflow-authoring surface is gone. This is now the tool-server SDK.**
+  Removed the `WorkflowSpec` DSL and its policy/type modules, the
+  `ConvilynClient` workflow verbs (`submit_workflow`, `list_workflows`, and the
+  workflow status/test/deactivate verbs), the `workflow` CLI command group, the
+  workflow half of `deploy` (`--workflow-file`), and the workflow scaffold. `push`
+  is now server-only. Workflow authoring lives exclusively in the Convilyn **chat
+  Builder** (web console) — the platform's developer workflow-submission endpoint
+  is parked (`403 WORKFLOW_SUBMISSION_DISABLED`), so shipping client methods that
+  can only 403 was misleading. The unreleased `with_dynamic_slots` addition is
+  removed with it. The surface may return if the developer submission lane is
+  revived.
+- **Kept, unchanged:** the tool-server surface — `ToolServer` / `ConvilynManifest`
+  / `ToolCatalog`, server build / register / verify / push / deploy (hosted) /
+  rollback / logs / status / catalog / doctor, and the local `ConvilynTestRunner`.
+  Edge integrators export a Builder-built workflow's grounded contract via the
+  consumer SDK (`user_workflows.grounded_contract(...)`).
+
 ## [2.2.0b6] - 2026-07-21
 
 ### Changed

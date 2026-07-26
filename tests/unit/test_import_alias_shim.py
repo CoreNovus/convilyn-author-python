@@ -30,17 +30,17 @@ _SUBPROCESS_SNIPPETS = {
     "old_symbols_are_new": (
         "import warnings\n"
         "warnings.simplefilter('ignore')\n"
-        "from convilyn_sdk import WorkflowSpec as OldSpec\n"
-        "from convilyn_author import WorkflowSpec as NewSpec\n"
-        "assert OldSpec is NewSpec\n"
+        "from convilyn_sdk import ToolServer as OldServer\n"
+        "from convilyn_author import ToolServer as NewServer\n"
+        "assert OldServer is NewServer\n"
     ),
     "submodule_identity": (
         "import warnings\n"
         "warnings.simplefilter('ignore')\n"
-        "import convilyn_sdk.workflow\n"
-        "import convilyn_author.workflow\n"
+        "import convilyn_sdk.server\n"
+        "import convilyn_author.server\n"
         "import sys\n"
-        "assert sys.modules['convilyn_sdk.workflow'] is sys.modules['convilyn_author.workflow']\n"
+        "assert sys.modules['convilyn_sdk.server'] is sys.modules['convilyn_author.server']\n"
     ),
     "cli_submodule_identity": (
         "import warnings\n"
@@ -131,7 +131,7 @@ def test_in_process_submodule_spec_resolves_via_finder() -> None:
     assert spec is not None
 
 
-@pytest.mark.parametrize("name", ["WorkflowSpec", "ToolServer", "AgentRole"])
+@pytest.mark.parametrize("name", ["ToolServer", "ConvilynClient", "ConvilynManifest"])
 def test_smoke_symbols_reachable_under_old_name(name: str) -> None:
     """The sdks.json publish-smoke symbols stay importable via the alias."""
     import warnings

@@ -97,132 +97,6 @@ CONVILYN_ENVIRONMENT=local
 # MY_API_KEY=
 """
 
-WORKFLOW_SERVER_PY_TEMPLATE = '''\
-"""Convilyn tool server — {name}."""
-
-from convilyn_author import ToolServer
-
-server = ToolServer(
-    name="{name}",
-    description="TODO: Describe your server",
-    version="0.1.0",
-)
-
-
-@server.tool(description="TODO: Describe this tool")
-async def process(input_text: str, language: str = "en") -> dict:
-    """Process input — replace with your implementation."""
-    result = {{"processed": input_text, "language": language, "length": len(input_text)}}
-    ref_id = await server.data_store.store(result)
-    return {{"ref_id": ref_id, "summary": f"Processed {{len(input_text)}} chars"}}
-
-
-@server.tool(description="TODO: Describe this tool")
-async def summarize(input_text: str) -> dict:
-    """Summarize input — replace with your implementation."""
-    summary = input_text[:200] + "..." if len(input_text) > 200 else input_text
-    return {{"summary": summary, "original_length": len(input_text)}}
-
-
-if __name__ == "__main__":
-    server.run()
-'''
-
-WORKFLOW_PY_TEMPLATE = '''\
-"""Convilyn workflow definition — {name}."""
-
-from convilyn_author import WorkflowSpec
-
-# Import server to auto-populate tool references
-from server import server
-
-workflow = (
-    WorkflowSpec(
-        "{name}",
-        name="TODO: Workflow Display Name",
-        version="0.1.0",
-        description="TODO: Describe what this workflow does",
-    )
-    .with_input(
-        types=["document"],
-        formats=["pdf", "txt"],
-        max_size_bytes=10_485_760,
-    )
-    .with_output(format="json", type="analysis_result")
-    .from_server(server)
-    .add_phase(
-        "Process",
-        "Extract and process the uploaded document using "
-        "`{name_under}__process`.",
-    )
-    .add_phase(
-        "Summarize",
-        "Generate a summary using `{name_under}__summarize`. "
-        "Store the result via `store_artifact`.",
-    )
-    .add_phase(
-        "Complete",
-        "Call `complete_workflow` with a summary of what was produced.",
-    )
-    .with_agent_config(max_iterations=20, temperature=0.3)
-    .add_preflight_rule(
-        "check_has_file",
-        check_type="file_count",
-        params={{"type": "document", "min": 1}},
-        error_message="Please upload a document",
-    )
-    .with_locale_policy(type="locale_independent")
-)
-
-if __name__ == "__main__":
-    import json
-    print(json.dumps(workflow.compile(), indent=2))
-'''
-
-WORKFLOW_TEST_TEMPLATE = '''\
-"""Tests for {name} workflow."""
-
-import pytest
-from convilyn_author.testing import ConvilynTestRunner, WorkflowTestRunner
-
-from server import server
-from workflow import workflow
-
-
-@pytest.fixture
-def tool_runner():
-    return ConvilynTestRunner(server=server)
-
-
-@pytest.fixture
-def workflow_runner():
-    return WorkflowTestRunner(workflow=workflow, tool_servers=[server])
-
-
-@pytest.mark.asyncio
-async def test_tool_compliance(tool_runner):
-    report = await tool_runner.run_compliance_check()
-    assert report.all_passed, f"Failed checks: {{report.failed}}"
-
-
-@pytest.mark.asyncio
-async def test_workflow_spec_valid(workflow_runner):
-    result = await workflow_runner.validate_spec()
-    assert result.valid, f"Spec errors: {{result.errors}}"
-
-
-@pytest.mark.asyncio
-async def test_workflow_tool_chain(workflow_runner):
-    result = await workflow_runner.validate_tool_chain()
-    assert result.valid, f"Tool chain errors: {{result.errors}}"
-
-
-@pytest.mark.asyncio
-async def test_workflow_dry_run(workflow_runner):
-    result = await workflow_runner.run(mode="dry_run")
-    assert result.passed, f"Dry run errors: {{result.errors}}"
-'''
-
 DOCKERFILE_TEMPLATE = """\
 FROM public.ecr.aws/lambda/python:3.12
 
@@ -247,14 +121,12 @@ CMD ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "80
 def scaffold_project(
     name: str,
     target_dir: Path | None = None,
-    project_type: str = "tools",
 ) -> Path:
-    """Generate a starter Convilyn project.
+    """Generate a starter Convilyn tool-server project.
 
     Args:
         name: Project/server name (used in filenames and metadata).
         target_dir: Directory to create the project in. Defaults to ./{name}.
-        project_type: "tools" for tool-only project, "workflow" for full workflow project.
 
     Returns:
         Path to the created project directory.
@@ -275,28 +147,13 @@ def scaffold_project(
 
     name_under = name.replace("-", "_")
 
-    if project_type == "workflow":
-        # Workflow project: server.py + workflow.py + workflow tests
-        (project_dir / "server.py").write_text(
-            WORKFLOW_SERVER_PY_TEMPLATE.format(name=name), encoding="utf-8"
-        )
-        (project_dir / "workflow.py").write_text(
-            WORKFLOW_PY_TEMPLATE.format(name=name, name_under=name_under),
-            encoding="utf-8",
-        )
-        (tests_dir / "__init__.py").write_text("", encoding="utf-8")
-        (tests_dir / f"test_{name_under}.py").write_text(
-            WORKFLOW_TEST_TEMPLATE.format(name=name), encoding="utf-8"
-        )
-    else:
-        # Tool-only project: server.py + tool tests
-        (project_dir / "server.py").write_text(
-            SERVER_PY_TEMPLATE.format(name=name), encoding="utf-8"
-        )
-        (tests_dir / "__init__.py").write_text("", encoding="utf-8")
-        (tests_dir / f"test_{name_under}.py").write_text(
-            TEST_TEMPLATE.format(name=name), encoding="utf-8"
-        )
+    (project_dir / "server.py").write_text(
+        SERVER_PY_TEMPLATE.format(name=name), encoding="utf-8"
+    )
+    (tests_dir / "__init__.py").write_text("", encoding="utf-8")
+    (tests_dir / f"test_{name_under}.py").write_text(
+        TEST_TEMPLATE.format(name=name), encoding="utf-8"
+    )
 
     (project_dir / "pyproject.toml").write_text(
         PYPROJECT_TEMPLATE.format(name=name), encoding="utf-8"

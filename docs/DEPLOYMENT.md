@@ -202,7 +202,6 @@ you, register it:
 ```bash
 convilyn-author push \
   --server-file server.py \
-  --workflow-file workflow.py \
   --endpoint-url https://<your-server>/
 ```
 
@@ -210,7 +209,6 @@ Successful registration:
 
 ```
 Server submitted: srv_abc123 (pending_verification)
-Workflow submitted: wf_xyz789 (pending_verification)
 Use 'convilyn-author status' to check verification progress.
 ```
 
@@ -252,7 +250,7 @@ This currently returns `HOSTED_NOT_AVAILABLE` in most accounts (HTTP
 503 on current platform builds; older builds answered 501, and
 environments with the author-runtime router unmounted answer 404). The
 self-hosted targets above (Lambda / Fargate / VM), registered with
-`convilyn-author push`, are the supported paths for the beta. If you
-cannot expose a public endpoint at all (edge device behind NAT) and
-your workflow only needs platform built-in tools, submit it server-less
-instead — see `submit_workflow` (no `server_ids`, no HMAC endpoint).
+`convilyn-author push`, are the supported paths for the beta.
+Workflow authoring lives in the Convilyn chat Builder — this SDK is the
+tool-server SDK (the `WorkflowSpec` DSL and `submit_workflow` were removed
+in 2.3.0b1).

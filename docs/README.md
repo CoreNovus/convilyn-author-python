@@ -1,9 +1,9 @@
 # Convilyn SDK (author)
 
-Build tool servers + workflow specs for the Convilyn AI workflow platform.
+Build tool servers for the Convilyn AI workflow platform.
 
 > **Companion package**: if you only want to *call* the Convilyn API
-> (no server hosting, no workflow authoring), install
+> (no server hosting), install
 > [`convilyn`](https://pypi.org/project/convilyn/) instead. The two
 > packages are intentionally separate so consumers don't pay the
 > uvicorn dependency cost (`convilyn-author` wraps a lightweight
@@ -37,7 +37,8 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-Export it as `CONVILYN_DEVELOPER_KEY` (see Environment Variables below).
+Export it as `CONVILYN_API_KEY` (see Environment Variables below — the
+client reads `CONVILYN_API_KEY`, not `CONVILYN_DEVELOPER_KEY`).
 A 503 `REGISTRATION_STORE_UNAVAILABLE` response means the platform side
 is temporarily unavailable — retry later; it is not a problem with your
 request.
@@ -50,11 +51,12 @@ convilyn-author init my-server
 cd my-server
 ```
 
-> **No public server?** If your workflow only orchestrates platform
-> built-in tools (OCR, document parsing, analysis), you can skip the
-> tool-server track entirely and submit the workflow spec server-less:
-> `await client.submit_workflow(spec)` — no `server_ids`, no HMAC
-> endpoint. See `submit_workflow` in `client.py`.
+> **Workflow authoring lives in the Convilyn chat Builder** (web console) —
+> the canonical authoring surface. This is the **tool-server SDK**: build,
+> register, verify and operate the MCP tool servers the platform's workflows
+> call. The `WorkflowSpec` DSL and `submit_workflow` were removed in
+> **2.3.0b1**; edge integrators export a Builder-built workflow's grounded
+> contract via the consumer SDK (`client.user_workflows.grounded_contract(...)`).
 
 Edit `server.py`:
 
@@ -89,9 +91,7 @@ if __name__ == "__main__":
 | `convilyn-author test` | Local compliance checks |
 | `convilyn-author test --sandbox` | Test with Convilyn Sandbox Agent |
 | `convilyn-author push --endpoint-url <url>` | Register a deployed tool server |
-| `convilyn-author status <id>` | Check verification status |
-| `convilyn-author workflow init <name>` | Scaffold a workflow spec |
-| `convilyn-author workflow build` | Compile workflow → spec JSON |
+| `convilyn-author status` | Check tool-server verification status |
 | `convilyn-author doctor` | Environment + connectivity checks |
 
 ## Testing
@@ -111,7 +111,7 @@ assert report.all_passed
 
 | Variable | Description |
 |----------|-------------|
-| `CONVILYN_DEVELOPER_KEY` | Your developer API key |
+| `CONVILYN_API_KEY` | Your developer API key (`cvl_…`) — the name the client actually reads |
 | `CONVILYN_PLATFORM_URL` | Platform base URL (default: `https://api.convilyn.corenovus.com`) |
 | `CONVILYN_HOST` | Server bind host (default: `0.0.0.0`) |
 | `CONVILYN_PORT` | Server bind port (default: `8080`) |

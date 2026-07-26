@@ -26,17 +26,6 @@ def _write_server(path) -> None:
     )
 
 
-def _write_workflow(path) -> None:
-    path.write_text(
-        "from convilyn_author import WorkflowSpec\n"
-        "workflow = (\n"
-        '    WorkflowSpec("wf_demo", name="Demo", version="1.0.0")\n'
-        '    .use_tools("demo:ping").use_servers("demo")\n'
-        '    .add_phase("P", "D")\n'
-        ")\n"
-    )
-
-
 # ── 1. Logic — deploy success path ───────────────────────────────
 
 
@@ -66,30 +55,6 @@ class TestDeployLogic:
         instance.deploy_hosted_runtime.assert_awaited_once()
         call_kwargs = instance.deploy_hosted_runtime.await_args.kwargs
         assert call_kwargs["region"] == "us-east-1"
-        assert call_kwargs["workflow_spec"] is None
-
-    def test_deploy_includes_workflow_when_file_present(self, tmp_path, monkeypatch) -> None:
-        monkeypatch.chdir(tmp_path)
-        _write_server(tmp_path / "server.py")
-        _write_workflow(tmp_path / "workflow.py")
-
-        runner = CliRunner()
-        with patch("convilyn_author.client.ConvilynClient") as MockClient:
-            instance = MockClient.return_value
-            instance.deploy_hosted_runtime = AsyncMock(
-                return_value={
-                    "runtime_id": "art_xyz",
-                    "endpoint_url": "https://r/art_xyz",
-                    "status": "provisioning",
-                    "workflow_id": "wf_pinned",
-                }
-            )
-            result = runner.invoke(cli, ["deploy", "--hosted"])
-
-        assert result.exit_code == 0, result.output
-        assert "wf_pinned" in result.output
-        call_kwargs = instance.deploy_hosted_runtime.await_args.kwargs
-        assert call_kwargs["workflow_spec"] is not None
 
 
 # ── 2. Boundary — BYO redirect, default region ──────────────────

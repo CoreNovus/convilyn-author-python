@@ -1,7 +1,8 @@
 """ConvilynClient — authenticated client for the Convilyn developer platform.
 
-Wraps the Developer Portal REST API for submitting tool servers, workflow
-specs, and managing developer resources.
+Wraps the Developer Portal REST API for submitting tool servers and
+managing developer resources. Workflow authoring lives in the Convilyn
+chat Builder — this client operates the tool-server surface only.
 
 Usage::
 
@@ -12,17 +13,15 @@ Usage::
     # Register (no auth needed)
     result = await client.register(email="dev@example.com", name="Dev")
 
-    # Push server + workflow
+    # Push a tool server
     push_result = await client.push(
         server=server,
-        workflow=workflow,
         endpoint_url="https://my-server.example.com",
     )
 """
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 import httpx
@@ -31,7 +30,6 @@ from convilyn_author.config import SDKConfig
 
 if TYPE_CHECKING:
     from convilyn_author.server import ToolServer
-    from convilyn_author.workflow import WorkflowSpec
 
 
 def _with_api_v1(platform_url: str) -> str:
@@ -103,7 +101,7 @@ class ConvilynClient:
                 f'("{CONSUMER_KEY_PREFIX}"), not an Author SDK / developer-portal token. '
                 "The Author SDK authenticates with a cvl_ developer key — register() to "
                 "mint one, or set CONVILYN_API_KEY to your cvl_ key. (Consumer keys call "
-                "the data-plane API; they do not publish workflows / tools.)",
+                "the data-plane API; they do not register tool servers.)",
             )
         # The Developer Portal is mounted under /api/v1 (e.g.
         # /api/v1/developers/register). The paths in this client are relative to
@@ -218,9 +216,8 @@ class ConvilynClient:
     async def list_platform_tools(self) -> dict[str, Any]:
         """List the platform's built-in MCP tools (vision / OCR / LLM / …).
 
-        Returns the platform tool catalog so you can discover built-in tool
-        names when authoring a **server-less** ``WorkflowSpec`` (one that uses
-        only platform-provided tools, no self-hosted server). The response is
+        Returns the platform tool catalog so you can discover the built-in
+        tools your own tools will coexist with. The response is
         ``{"items": [...], "servers": [...]}``; each item carries ``toolName``,
         ``mcpServer``, ``displayName``, ``category``, ``description``,
         ``costMicroU`` and ``riskLevel``.
@@ -250,56 +247,6 @@ class ConvilynClient:
         """Deactivate a server."""
         return await self._request("DELETE", f"/developers/servers/{server_id}")
 
-    # ── Workflow Operations ───────────────────────────────────────
-
-    async def submit_workflow(
-        self,
-        workflow_spec: dict[str, Any],
-        server_ids: Sequence[str] = (),
-    ) -> dict[str, Any]:
-        """Submit a workflow spec for validation and registration.
-
-        Args:
-            workflow_spec: Compiled workflow spec dict (from WorkflowSpec.compile()).
-            server_ids: server_ids whose tools this workflow uses. Omit (or
-                pass an empty sequence) for a "server-less" spec that
-                orchestrates only platform built-in tools — no self-hosted
-                tool server required.
-
-        Returns:
-            Dict with workflow_id, spec_id, and status.
-        """
-        return await self._request(
-            "POST",
-            "/developers/workflows",
-            json={"workflow_spec": workflow_spec, "server_ids": list(server_ids)},
-        )
-
-    async def list_workflows(self) -> list[dict[str, Any]]:
-        """List all workflows for the authenticated developer."""
-        result = await self._request("GET", "/developers/workflows")
-        return result if isinstance(result, list) else [result]
-
-    async def get_workflow_status(self, workflow_id: str) -> dict[str, Any]:
-        """Check status of a submitted workflow."""
-        return await self._request("GET", f"/developers/workflows/{workflow_id}/status")
-
-    async def test_workflow(
-        self,
-        workflow_id: str,
-        test_input: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
-        """Trigger a sandbox test for a workflow."""
-        return await self._request(
-            "POST",
-            f"/developers/workflows/{workflow_id}/test",
-            json={"test_input": test_input or {}},
-        )
-
-    async def deactivate_workflow(self, workflow_id: str) -> dict[str, Any]:
-        """Deactivate a workflow."""
-        return await self._request("DELETE", f"/developers/workflows/{workflow_id}")
-
     # ── Convilyn-Hosted Author Runtime ───────────────────────────
 
     async def deploy_hosted_runtime(
@@ -307,27 +254,22 @@ class ConvilynClient:
         manifest: dict[str, Any],
         *,
         region: str,
-        workflow_spec: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Deploy a tool server into the Convilyn-Hosted Author Runtime.
 
         Counterpart to :meth:`submit_server` — instead of registering an
-        existing caller-deployed endpoint, this hands the manifest plus
-        an optional workflow spec to the platform, which provisions a
-        sandboxed hosted runtime in the Convilyn-managed environment and
-        returns the public endpoint URL that fronts it.
+        existing caller-deployed endpoint, this hands the manifest to the
+        platform, which provisions a sandboxed hosted runtime in the
+        Convilyn-managed environment and returns the public endpoint URL
+        that fronts it.
 
         Args:
             manifest: ``ConvilynManifest`` dict (from ``server.synth().to_dict()``).
             region: AWS region to deploy into (e.g. ``"us-east-1"``).
-            workflow_spec: Optional compiled workflow spec; when
-                provided, the platform registers it alongside the
-                hosted runtime so a single ``deploy --hosted`` call can
-                ship both surfaces.
 
         Returns:
             Dict with ``runtime_id``, ``endpoint_url``, ``region``,
-            ``status``, and (when provided) ``workflow_id``.
+            and ``status``.
 
         Raises:
             ConvilynClientError: backend failure. Backend code
@@ -342,8 +284,6 @@ class ConvilynClient:
             "manifest": manifest,
             "region": region,
         }
-        if workflow_spec is not None:
-            payload["workflow_spec"] = workflow_spec
         return await self._request("POST", "/developers/runtimes/hosted", json=payload)
 
     async def rollback_hosted_runtime(self, runtime_id: str) -> dict[str, Any]:
@@ -399,21 +339,18 @@ class ConvilynClient:
     async def push(
         self,
         server: ToolServer,
-        workflow: WorkflowSpec,
         endpoint_url: str,
     ) -> dict[str, Any]:
-        """Push a tool server and workflow to the platform in one operation.
+        """Push a tool server to the platform in one operation.
 
-        Orchestrates: synth manifest → submit server → compile workflow
-        → submit workflow.
+        Orchestrates: synth manifest → submit server.
 
         Args:
             server: ToolServer instance with registered tools.
-            workflow: WorkflowSpec instance defining the workflow.
             endpoint_url: HTTPS URL where the tool server is deployed.
 
         Returns:
-            Dict with server_id, workflow_id, and combined status.
+            Dict with server_id, server_name, and status.
         """
         # 1. Compile manifest
         manifest = server.synth()
@@ -423,17 +360,8 @@ class ConvilynClient:
         server_result = await self.submit_server(manifest_dict, endpoint_url)
         server_id = server_result["server_id"]
 
-        # 3. Compile workflow
-        workflow_spec = workflow.compile()
-
-        # 4. Submit workflow
-        workflow_result = await self.submit_workflow(workflow_spec, [server_id])
-
         return {
             "server_id": server_id,
             "server_name": server_result.get("server_name", server.name),
             "server_status": server_result.get("status", "submitted"),
-            "workflow_id": workflow_result.get("workflow_id", ""),
-            "workflow_spec_id": workflow_result.get("spec_id", ""),
-            "workflow_status": workflow_result.get("status", "submitted"),
         }

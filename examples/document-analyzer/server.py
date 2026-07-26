@@ -1,7 +1,7 @@
 """Document Analyzer — example Convilyn tool server.
 
-Demonstrates a complete workflow project with tools that parse,
-analyze, and summarize documents.
+Demonstrates a tool server with tools that parse, analyze, and
+summarize documents — the kind of tools a platform workflow calls.
 """
 
 from convilyn_author import ToolServer

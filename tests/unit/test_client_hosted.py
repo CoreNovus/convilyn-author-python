@@ -46,20 +46,6 @@ class TestDeployHostedLogic:
         body = client._request.await_args.kwargs["json"]
         assert body["region"] == "us-east-1"
         assert body["manifest"] == {"server": {"name": "demo"}, "tools": []}
-        assert "workflow_spec" not in body
-
-    @pytest.mark.asyncio
-    async def test_deploy_includes_workflow_when_given(self) -> None:
-        client = ConvilynClient(api_key="cvl_t", base_url="http://test")
-        client._request = AsyncMock(return_value={"runtime_id": "art_xyz"})
-
-        await client.deploy_hosted_runtime(
-            {"server": {"name": "demo"}, "tools": []},
-            region="us-west-2",
-            workflow_spec={"spec_id": "wf_demo", "phases": []},
-        )
-        body = client._request.await_args.kwargs["json"]
-        assert body["workflow_spec"] == {"spec_id": "wf_demo", "phases": []}
 
 
 class TestRollbackLogic:
