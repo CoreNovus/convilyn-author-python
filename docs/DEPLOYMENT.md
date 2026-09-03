@@ -19,7 +19,7 @@ documented end-to-end: **AWS Lambda (Docker)**, **AWS Fargate**, and a
 - A working `ToolServer` defined in `server.py` (see [README](README.md))
 - HTTPS-terminating endpoint reachable from the public internet
 - Ability to set environment variables on your runtime
-- A `cvl_` developer API key from <https://convilyn.corenovus.com/developer>
+- A `cvl_` developer API key from <https://console.corenovus.com/keys>
 
 ## 2. HMAC contract (read first)
 
@@ -232,7 +232,7 @@ discovery inside the platform.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `convilyn-author push` → 402 | Your developer account lacks Pro tier | Upgrade at <https://convilyn.corenovus.com/pricing> |
+| `convilyn-author push` → 402 | Your developer account lacks Pro tier | Upgrade at <https://convilyn.com/pricing> |
 | Inbound calls return 401 | HMAC signature mismatch | Re-issue secret, confirm `CONVILYN_HMAC_SECRET` matches |
 | Inbound calls return 408 | Timestamp older than tolerance | Clock skew between your server + Convilyn gateway; sync via NTP |
 | `convilyn-author status` shows `verification_failed` | Tool didn't pass synthetic probe | Check logs; common cause is unhandled exception → 500 |

@@ -29,7 +29,7 @@ class TestDeployHostedLogic:
         client._request = AsyncMock(
             return_value={
                 "runtime_id": "art_abc",
-                "endpoint_url": "https://router.convilyn.com/r/art_abc",
+                "endpoint_url": "https://router.example.com/r/art_abc",
                 "region": "us-east-1",
                 "status": "provisioning",
             }

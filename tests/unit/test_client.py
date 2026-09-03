@@ -27,21 +27,21 @@ class TestClientConstruction:
         assert client._api_key == "cvl_test_key"  # pragma: allowlist secret
         # Default base derives from platform_url AND includes /api/v1, so the
         # relative /developers/* paths resolve against the mount (issue #2011).
-        assert client._base_url == "https://api.convilyn.corenovus.com/api/v1"
+        assert client._base_url == "https://api.convilyn.com/api/v1"
 
     def test_default_base_composes_the_full_developer_path(self):
         # The literal URL a default-config call would hit — must include /api/v1.
         client = ConvilynClient(api_key="cvl_test")
         assert (
             f"{client._base_url}/developers/register"
-            == "https://api.convilyn.corenovus.com/api/v1/developers/register"
+            == "https://api.convilyn.com/api/v1/developers/register"
         )
 
     def test_api_v1_is_not_doubled_when_platform_url_already_has_it(self):
-        env = {"CONVILYN_PLATFORM_URL": "https://api.convilyn.corenovus.com/api/v1"}
+        env = {"CONVILYN_PLATFORM_URL": "https://api.convilyn.com/api/v1"}
         with patch.dict("os.environ", env):
             client = ConvilynClient(api_key="cvl_test")
-            assert client._base_url == "https://api.convilyn.corenovus.com/api/v1"
+            assert client._base_url == "https://api.convilyn.com/api/v1"
 
     def test_custom_url_is_used_verbatim(self):
         # An explicit base_url is the caller's responsibility — no /api/v1 added.

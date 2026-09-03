@@ -147,9 +147,7 @@ def scaffold_project(
 
     name_under = name.replace("-", "_")
 
-    (project_dir / "server.py").write_text(
-        SERVER_PY_TEMPLATE.format(name=name), encoding="utf-8"
-    )
+    (project_dir / "server.py").write_text(SERVER_PY_TEMPLATE.format(name=name), encoding="utf-8")
     (tests_dir / "__init__.py").write_text("", encoding="utf-8")
     (tests_dir / f"test_{name_under}.py").write_text(
         TEST_TEMPLATE.format(name=name), encoding="utf-8"

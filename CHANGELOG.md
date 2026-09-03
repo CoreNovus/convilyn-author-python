@@ -5,6 +5,16 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.4.0b1] - 2026-08-25
+
+### Changed
+
+- **Default `platform_url` is now `https://api.convilyn.com`** (was
+  `https://api.convilyn.corenovus.com`). The old host keeps serving
+  indefinitely — this is an additive alias, not a retirement — so the change
+  only affects a fresh `SDKConfig`/`from_env()` with no override. Set
+  `CONVILYN_PLATFORM_URL` explicitly to keep using the old host.
+
 ## [2.3.0b1] - 2026-07-26
 
 ### Removed (breaking)

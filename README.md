@@ -51,7 +51,7 @@ VM) and Convilyn bills the *caller* of your tools, not you.
 See **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** for the HMAC contract + billing model,
 **[docs/STABILITY.md](docs/STABILITY.md)** for the SemVer promise, and the full docs at:
 
-[https://docs.convilyn.corenovus.com](https://docs.convilyn.corenovus.com)
+[https://docs.convilyn.com](https://docs.convilyn.com)
 
 ## Community
 

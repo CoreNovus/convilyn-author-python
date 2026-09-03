@@ -40,7 +40,7 @@ class TestDeployLogic:
             instance.deploy_hosted_runtime = AsyncMock(
                 return_value={
                     "runtime_id": "art_abc",
-                    "endpoint_url": "https://router.convilyn.com/r/art_abc",
+                    "endpoint_url": "https://router.example.com/r/art_abc",
                     "status": "provisioning",
                 }
             )
@@ -51,7 +51,7 @@ class TestDeployLogic:
 
         assert result.exit_code == 0, result.output
         assert "art_abc" in result.output
-        assert "router.convilyn.com" in result.output
+        assert "router.example.com" in result.output
         instance.deploy_hosted_runtime.assert_awaited_once()
         call_kwargs = instance.deploy_hosted_runtime.await_args.kwargs
         assert call_kwargs["region"] == "us-east-1"

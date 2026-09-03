@@ -112,7 +112,7 @@ assert report.all_passed
 | Variable | Description |
 |----------|-------------|
 | `CONVILYN_API_KEY` | Your developer API key (`cvl_…`) — the name the client actually reads |
-| `CONVILYN_PLATFORM_URL` | Platform base URL (default: `https://api.convilyn.corenovus.com`) |
+| `CONVILYN_PLATFORM_URL` | Platform base URL (default: `https://api.convilyn.com`) |
 | `CONVILYN_HOST` | Server bind host (default: `0.0.0.0`) |
 | `CONVILYN_PORT` | Server bind port (default: `8080`) |
 | `CONVILYN_HMAC_SECRET` | HMAC secret used to verify inbound `/mcp` requests from the Convilyn gateway. **Required on every deployment** — without it the server refuses to start (fail-closed). `convilyn-author dev` (and `CONVILYN_DEV_INSECURE=1`) serve without a secret for local development only. |

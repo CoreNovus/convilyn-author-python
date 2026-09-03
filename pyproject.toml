@@ -11,7 +11,7 @@ license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.10"
 authors = [
-    { name = "Convilyn", email = "sdk@convilyn.corenovus.com" },
+    { name = "Convilyn", email = "support@convilyn.com" },
 ]
 keywords = [
     "convilyn",
@@ -40,8 +40,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://convilyn.corenovus.com"
-Documentation = "https://docs.convilyn.corenovus.com"
+Homepage = "https://convilyn.com"
+Documentation = "https://docs.convilyn.com"
 Repository = "https://github.com/CoreNovus/convilyn-author-python"
 "Source Code" = "https://github.com/CoreNovus/convilyn-author-python"
 Issues = "https://github.com/CoreNovus/convilyn-author-python/issues"
@@ -59,7 +59,11 @@ dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
-    "ruff==0.15.22",
+    "ruff==0.16.5",
+    # The `typecheck` gate's checker (#3917); specifier kept textually identical
+    # to every other declaration of it (cross-file agreement ratchet). The exact
+    # version is pinned by uv.lock, which `--locked` enforces.
+    "pyright>=1.1.350",
 ]
 
 [tool.hatch.version]
@@ -98,9 +102,31 @@ exclude = [
     ".gitignore",
 ]
 
+[tool.pyright]
+# Read by the `typecheck` gate — `uv run --locked pyright src`
+# (scripts/ci/sdk_local_ci.py, #3917) — and by an editor, so both agree.
+# Mode pinned, not inherited: pyright's default has moved before now.
+typeCheckingMode = "standard"
+pythonVersion = "3.10"
+include = ["src"]
+# `boto3` is imported lazily inside `DynamoDataStore._get_client` and is
+# deliberately NOT a dependency — the SDK is usable without it, so an
+# unresolved import there is the declared design, not a defect.
+reportMissingImports = false
+
 [tool.ruff]
 target-version = "py310"
 line-length = 100
+# `.md` is out of scope for BOTH ruff gates, stated here so a manual
+# `ruff format` and the CI gate see the same tree (#3939).
+#
+# ruff 0.16 formats python code fences inside markdown; `ruff check` does NOT
+# scan markdown at all. Left unstated, `format` would cover a surface `lint`
+# does not, and the READMEs here ship inside the published package — measured,
+# the reflow explodes deliberately-compact multi-name imports in quickstart
+# samples one-per-line. Formatting published docs is a docs decision, not a
+# side effect of adding a formatter gate; tracked separately.
+extend-exclude = ["*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]

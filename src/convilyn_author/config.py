@@ -22,7 +22,7 @@ class SDKConfig:
     tool_data_table: str = "tool-data"
     environment: str = "local"
     api_key: str | None = None
-    platform_url: str = "https://api.convilyn.corenovus.com"
+    platform_url: str = "https://api.convilyn.com"
     hmac_secret: str | None = None
     hmac_tolerance_seconds: int = 300
 
@@ -56,9 +56,7 @@ class SDKConfig:
             tool_data_table=os.environ.get("TOOL_DATA_TABLE", "tool-data"),
             environment=os.environ.get("CONVILYN_ENVIRONMENT", "local"),
             api_key=os.environ.get("CONVILYN_API_KEY"),
-            platform_url=os.environ.get(
-                "CONVILYN_PLATFORM_URL", "https://api.convilyn.corenovus.com"
-            ),
+            platform_url=os.environ.get("CONVILYN_PLATFORM_URL", "https://api.convilyn.com"),
             hmac_secret=os.environ.get("CONVILYN_HMAC_SECRET") or None,
             hmac_tolerance_seconds=int(os.environ.get("CONVILYN_HMAC_TOLERANCE_SECONDS", "300")),
         )
