@@ -59,7 +59,7 @@ dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
-    "ruff==0.16.5",
+    "ruff==0.16.6",
     # The `typecheck` gate's checker (#3917); specifier kept textually identical
     # to every other declaration of it (cross-file agreement ratchet). The exact
     # version is pinned by uv.lock, which `--locked` enforces.
